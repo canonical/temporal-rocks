@@ -16,10 +16,15 @@ parts:
         source: https://github.com/temporalio/temporal
         source-subdir: cmd/server 
         source-type: git
-        source-tag: release/v1.23.x
+        source-tag: v1.23.1
         build-snaps:
             - go/1.21/stable
-        stage-snaps:
-            - temporal/latest/stable
         organize:
             bin/server: bin/temporal-server
+    temporal-cli:
+        plugin: go
+        source: https://github.com/temporalio/cli.git
+        source-type: git
+        source-tag: v1.3.0
+        build-snaps:
+            - go/1.24/stable
