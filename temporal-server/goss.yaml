@@ -1,0 +1,34 @@
+file:
+  /start_temporal_server.sh:
+    exists: true
+    path: /start_temporal_server.sh
+    mode: '0775'
+    owner: root
+    group: root
+    filetype: file
+  /usr/bin/temporal-server:
+    exists: true
+    path: /usr/bin/temporal-server
+    mode: '0755'
+    owner: root
+    group: root
+    filetype: file
+  /usr/bin/temporal:
+    exists: true
+    path: /usr/bin/temporal
+    mode: '0755'
+    owner: root
+    group: root
+    filetype: file
+process:
+  temporal-server:
+    running: true
+command:
+  'temporal operator cluster health':
+    exit-status: 0
+    exec: 'temporal operator cluster health'
+    stdout:
+    - SERVING
+    stderr: []
+    timeout: 1000
+    skip: false
