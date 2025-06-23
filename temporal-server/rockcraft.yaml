@@ -28,6 +28,7 @@ parts:
             - go/1.21/stable
         organize:
             bin/server: bin/temporal-server
+            LICENSE: licenses/LICENSE-temporal
     temporal-cli:
         plugin: go
         source: https://github.com/temporalio/cli.git
@@ -35,7 +36,13 @@ parts:
         source-tag: v1.3.0
         build-snaps:
             - go/1.24/stable
+        organize:
+            LICENSE: licences/LICENSE-temporal-cli
     temporal-scripts:
         plugin: dump
         source: scripts
         source-type: local
+        stage:
+            - licenses/LICENSE-rock
+        organize:
+            LICENSE: licenses/LICENSE-rock
