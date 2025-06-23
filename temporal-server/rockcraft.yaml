@@ -12,7 +12,8 @@ platforms: # the platforms this rock should be built on and run on
 
 services:
     temporal-server:
-        command: /start_temporal_server.sh
+        command: /usr/bin/temporal-server start
+        working-dir: /etc/temporal
         override: replace
         startup: enabled
         user: ubuntu
@@ -35,7 +36,29 @@ parts:
         source-tag: v1.3.0
         build-snaps:
             - go/1.24/stable
-    temporal-scripts:
+    temporal-rock-license:
         plugin: dump
-        source: scripts
-        source-type: local
+        source: LICENSE
+        source-type: file
+        stage:
+            - licenses/LICENSE-rock
+        organize:
+            LICENSE: licenses/LICENSE-rock
+    temporal-license:
+        plugin: dump
+        source: https://github.com/temporalio/temporal
+        source-type: git
+        source-tag: v1.23.1
+        organize:
+            LICENSE: licenses/LICENSE-temporal
+        stage:
+            - licenses/LICENSE-temporal
+    temporal-cli-license:
+        plugin: dump
+        source: https://github.com/temporalio/cli.git
+        source-type: git
+        source-tag: v1.3.0
+        organize:
+            LICENSE: licenses/LICENSE-temporal-cli
+        stage:
+            - licenses/LICENSE-temporal-cli
