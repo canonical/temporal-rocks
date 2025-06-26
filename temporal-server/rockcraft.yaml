@@ -12,11 +12,19 @@ platforms: # the platforms this rock should be built on and run on
 
 services:
     temporal-server:
+        description: Service for temporal server
         command: /usr/bin/temporal-server start
         working-dir: /etc/temporal
         override: replace
         startup: enabled
         user: ubuntu
+
+checks:
+    temporal-server-running:
+        override: replace
+        exec:
+            command: pgrep temporal-server
+
 
 parts:
     temporal:
@@ -36,14 +44,14 @@ parts:
         source-tag: v1.3.0
         build-snaps:
             - go/1.24/stable
-    temporal-rock-license:
+    temporal-server-rock-license:
         plugin: dump
-        source: LICENSE
-        source-type: file
-        stage:
-            - licenses/LICENSE-rock
+        source: https://github.com/canonical/temporal-rocks.git
+        source-type: git
         organize:
-            LICENSE: licenses/LICENSE-rock
+            LICENSE: licenses/LICENSE-temporal-server-rock
+        stage:
+            - licenses/LICENSE-temporal-server-rock
     temporal-license:
         plugin: dump
         source: https://github.com/temporalio/temporal
@@ -62,3 +70,9 @@ parts:
             LICENSE: licenses/LICENSE-temporal-cli
         stage:
             - licenses/LICENSE-temporal-cli
+    prerequisite-directories:
+        plugin: nil
+        source: .
+        source-type: local
+        override-build: |
+            mkdir -p ${CRAFT_PART_INSTALL}/etc/temporal
