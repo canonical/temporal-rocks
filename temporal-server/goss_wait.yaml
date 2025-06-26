@@ -1,0 +1,5 @@
+process:
+  pebble:
+    running: true
+  temporal-server:
+    running: true

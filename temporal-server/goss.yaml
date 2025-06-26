@@ -1,0 +1,48 @@
+file:
+  /usr/bin/temporal-server:
+    exists: true
+    path: /usr/bin/temporal-server
+    mode: '0755'
+    owner: root
+    group: root
+    filetype: file
+  /usr/bin/temporal:
+    exists: true
+    path: /usr/bin/temporal
+    mode: '0755'
+    owner: root
+    group: root
+    filetype: file
+  /licenses/LICENSE-temporal-server-rock:
+    exists: true
+    path: /licenses/LICENSE-temporal-server-rock
+    mode: '0644'
+    owner: root
+    group: root
+    filetype: file
+  /licenses/LICENSE-temporal:
+    exists: true
+    path: /licenses/LICENSE-temporal
+    mode: '0644'
+    owner: root
+    group: root
+    filetype: file
+  /licenses/LICENSE-temporal-cli:
+    exists: true
+    path: /licenses/LICENSE-temporal-cli
+    mode: '0644'
+    owner: root
+    group: root
+    filetype: file
+process:
+  temporal-server:
+    running: true
+command:
+  'temporal operator cluster health':
+    exit-status: 0
+    exec: 'temporal operator cluster health'
+    stdout:
+    - SERVING
+    stderr: []
+    timeout: 1000
+    skip: false
