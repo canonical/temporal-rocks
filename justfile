@@ -1,37 +1,49 @@
 set quiet # Recipes are silent by default
 set export # Just variables are exported to environment variables
 
-default_component := "temporal-server"
-
 [private]
 default:
 	just --list
 
 [private]
-push-to-registry component:
+start-local-registry: (stop-local-registry)
+	docker run -d -p 5000:5000 --name registry registry:2.7
+
+[private]
+stop-local-registry: 
+	docker stop registry || true
+	docker rm registry || true
+
+[private]
+push-to-local-registry component:
 	#!/usr/bin/bash
-	set -e
-	echo "Pushing ${component} to local"
+	set -euox pipefail
+
 	rock_file=$(ls "${component}" | grep "\.rock")
 	rock_version=$(yq ".version" "${component}/rockcraft.yaml")
 	rockcraft.skopeo --insecure-policy copy --dest-tls-verify=false \
 		"oci-archive:${component}/${rock_file}" \
-		"docker://localhost:32000/${component}-dev:${rock_version}"
+		"docker://localhost:5000/${component}-dev:${rock_version}"
 
 # Clean the rockcraft project of the component and remove any existing rock files
-clean component=default_component:
+clean component:
 	cd "${component}" && rockcraft clean
 	cd "${component}" && rm -f "$(ls | grep *.rock)"
 	rm -rf "${component}/temporal"
 
 # Pack a rock for a specific component
-pack component=default_component:
-	cd "${component}" && rockcraft pack
+pack component debug="":
+	#!/usr/bin/bash
+	debug_options=$(if [ -n "${debug}" ]; then echo "--debug"; fi)
+	cd "${component}" && rockcraft pack ${debug_options}
 
 # Pack rock for component and run pod with rock in kubernetes
-run component=default_component: (pack component) (push-to-registry component)
+run component: (start-local-registry) (pack component) (push-to-local-registry component)
 	#!/usr/bin/bash
-	set -e
+	set -euxo pipefail
+
+	trap 'just stop-local-registry' EXIT
+
 	rock_version=$(yq ".version" "${component}/rockcraft.yaml")
 	extra_options=""
 	goss_vars="GOSS_KUBECTL_BIN=\"$(which kubectl)\" GOSS_OPTS=\"--retry-timeout 60s --color\""
@@ -45,12 +57,15 @@ run component=default_component: (pack component) (push-to-registry component)
 	cd "${component}"
 	fi
 
-	eval "env ${goss_vars} kgoss edit -i localhost:32000/${component}-dev:${rock_version} ${extra_options}"
+	eval "env ${goss_vars} kgoss edit -i localhost:5000/${component}-dev:${rock_version} ${extra_options}"
 
 # Pack rock for component and run goss tests with rock in kubernetes
-test component=default_component: (pack component) (push-to-registry component)
+test component: (start-local-registry) (pack component) (push-to-local-registry component)
 	#!/usr/bin/bash
-	set -e
+	set -euxo pipefail
+
+	trap 'just stop-local-registry' EXIT
+
 	rock_version=$(yq ".version" "${component}/rockcraft.yaml")
 	extra_options=""
 	goss_vars="GOSS_KUBECTL_BIN=\"$(which kubectl)\" GOSS_OPTS=\"--retry-timeout 60s\""
@@ -64,4 +79,4 @@ test component=default_component: (pack component) (push-to-registry component)
 	cd "${component}"
 	fi
 
-	eval "env ${goss_vars} kgoss run -i localhost:32000/${component}-dev:${rock_version} ${extra_options}"
+	eval "env ${goss_vars} kgoss run -i localhost:5000/${component}-dev:${rock_version} ${extra_options}"
