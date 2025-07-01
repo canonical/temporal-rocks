@@ -1,0 +1,78 @@
+file:
+  /usr/bin/temporal:
+    exists: true
+    path: /usr/bin/temporal
+    mode: '0755'
+    owner: root
+    group: root
+    filetype: file
+  /usr/bin/temporal-sql-tool:
+    exists: true
+    path: /usr/bin/temporal-sql-tool
+    mode: '0755'
+    owner: root
+    group: root
+    filetype: file
+  /usr/bin/tdbg:
+    exists: true
+    path: /usr/bin/tdbg
+    mode: '0755'
+    owner: root
+    group: root
+    filetype: file
+  /licenses/LICENSE-temporal-admin-tools-rock:
+    exists: true
+    path: /licenses/LICENSE-temporal-admin-tools-rock
+    mode: '0644'
+    owner: root
+    group: root
+    filetype: file
+  /licenses/LICENSE-temporal:
+    exists: true
+    path: /licenses/LICENSE-temporal
+    mode: '0644'
+    owner: root
+    group: root
+    filetype: file
+  /licenses/LICENSE-temporal-cli:
+    exists: true
+    path: /licenses/LICENSE-temporal-cli
+    mode: '0644'
+    owner: root
+    group: root
+    filetype: file
+  /etc/temporal/schema/postgresql:
+    exists: true
+    path: /etc/temporal/schema/postgresql
+    mode: '0755'
+    owner: root
+    group: root
+    filetype: directory
+process:
+  pebble:
+    running: true
+command:
+  'temporal --version':
+    exit-status: 0
+    exec: 'temporal --version'
+    stdout:
+    - temporal version v1.3.0 (Server 1.27.1, UI 2.36.0)
+    stderr: []
+    timeout: 1000
+    skip: false
+  'temporal-sql-tool --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool --version'
+    stdout:
+    - temporal-sql-tool version 0.0.1
+    stderr: []
+    timeout: 1000
+    skip: false
+  'tdbg --version':
+    exit-status: 0
+    exec: 'tdbg --version'
+    stdout:
+    - tdbg version 1.23.1
+    stderr: []
+    timeout: 1000
+    skip: false
