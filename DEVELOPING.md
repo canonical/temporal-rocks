@@ -25,7 +25,7 @@ chmod +rx /usr/local/bin/kgoss
 
 ## Directory structure
 
-Each temporal rock is organized into a separate directory (e.g. `temporal-server/`).
+Each temporal rock is organized into a separate directory (e.g. `temporal-server/`). Each component has a rockcraft.yaml file per supported version (e.g. `temporal-server/1.23.1/rockcraft.yaml`).
 
 ## Building Temporal rocks
 
@@ -39,7 +39,7 @@ rockcraft pack
 Furthermore, we have `just` commands to be able to pack from the project root. For instance, to build the temporal-server rock, you can run the following from the project root:
 
 ```
-just pack temporal-server
+just pack temporal-server/1.23.1
 ```
 
 ## Running a built Temporal rock
