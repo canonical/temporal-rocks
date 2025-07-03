@@ -12,4 +12,4 @@ on:
 jobs:
   pull-request:
     name: PR
-    uses: shayancanonical/observability/.github/workflows/rock-pull-request.yaml@feature/configure_rock_pull_request
+    uses: canonical/observability/.github/workflows/rock-pull-request.yaml@v1
