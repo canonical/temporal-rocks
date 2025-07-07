@@ -23,7 +23,7 @@ push-to-local-registry component version:
 
 	rockcraft.skopeo --insecure-policy copy --dest-tls-verify=false \
 		"oci-archive:${component}/${version}/${rock_file}" \
-		"docker://localhost:5000/temporal-server-dev:${version}"
+		"docker://localhost:5000/${component}-dev:${version}"
 
 [private]
 format_directory directory:
