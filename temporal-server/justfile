@@ -35,6 +35,8 @@ run version: (start-local-registry) (pack version) (push-to-local-registry versi
 
 	trap 'just stop-local-registry' EXIT
 
+	rock_version="$(just format_directory $version)"
+
 	rock_version="${version#temporal-server/}"
 
 	just clone-temporal-repo $rock_version
@@ -52,6 +54,8 @@ test version: (start-local-registry) (pack version) (push-to-local-registry vers
 	set -euxo pipefail
 
 	trap 'just stop-local-registry' EXIT
+
+	rock_version="$(just format_directory $version)"
 
 	rock_version="${version#temporal-server/}"
 
