@@ -19,7 +19,7 @@ clone-temporal-repo rock_version:
 	git clone --branch "v${rock_version}" --single-branch https://github.com/temporalio/temporal temporal
 
 # Pack the rock for the provided version
-pack version:
+pack version debug="":
 	just --justfile=../justfile pack temporal-server/${version} ${debug}
 
 # Clean the rockcraft project of the component and remove any existing rock files

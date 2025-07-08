@@ -13,7 +13,7 @@ platforms: # the platforms this rock should be built on and run on
 parts:
     temporal-cli:
         plugin: go
-        source: https://github.com/temporalio/cli.git
+        source: https://github.com/temporalio/cli
         source-type: git
         source-tag: v1.3.0
         build-snaps:
@@ -59,7 +59,7 @@ parts:
             - etc/temporal/schema
     temporal-cli-license:
         plugin: dump
-        source: https://github.com/temporalio/cli.git
+        source: https://github.com/temporalio/cli
         source-type: git
         source-tag: v1.3.0
         organize:
