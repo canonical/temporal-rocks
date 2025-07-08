@@ -39,7 +39,7 @@ parts:
             npm install --global corepack@latest
             corepack enable pnpm
 
-            pnpm install $(yes | head -n 1)
+            pnpm install < <(yes | head -n 1)
             pnpm build:server
 
             cd server
