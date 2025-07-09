@@ -44,6 +44,8 @@ parts:
         source-tag: v1.3.0
         build-snaps:
             - go/1.24/stable
+        override-build: |
+            go build -ldflags "-X 'github.com/temporalio/cli/temporalcli.Version=1.3.0'" -o ${CRAFT_PART_INSTALL}/bin/temporal ./cmd/temporal
     temporal-server-rock-license:
         plugin: dump
         source: https://github.com/canonical/temporal-rocks.git
