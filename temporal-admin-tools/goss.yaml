@@ -52,11 +52,21 @@ process:
   pebble:
     running: true
 command:
+  'temporal server start-dev':
+    exit-status: 124
+    exec: 'timeout 5 temporal server start-dev'
+    stdout:
+    - CLI 1.3.0 (Server 1.27.1, UI 2.36.0)
+    - 'Server:  localhost:7233'
+    - 'UI:      http://localhost:8233'
+    - "Stopping server..."
+    stderr: []
+    skip: false
   'temporal --version':
     exit-status: 0
     exec: 'temporal --version'
     stdout:
-    - temporal version v1.3.0 (Server 1.27.1, UI 2.36.0)
+    - temporal version 1.3.0 (Server 1.27.1, UI 2.36.0)
     stderr: []
     timeout: 1000
     skip: false

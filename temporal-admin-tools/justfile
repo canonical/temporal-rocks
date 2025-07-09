@@ -50,6 +50,6 @@ test version: (start-local-registry) (pack version) (push-to-local-registry vers
 	rock_version="${rock_version#temporal-admin-tools/}"
 
 	extra_options+="-e TEMPORAL_ROOT=/etc/temporal -e TEMPORAL_ENVIRONMENT=development-sqlite"
-	goss_vars="GOSS_KUBECTL_BIN=\"$(which kubectl)\" GOSS_OPTS=\"--retry-timeout 60s\""
+	goss_vars="GOSS_KUBECTL_BIN=\"$(which kubectl)\" GOSS_OPTS=\"--retry-timeout 60s --sleep 10s\""
 
 	eval "env ${goss_vars} kgoss run -i localhost:5000/temporal-admin-tools-dev:${rock_version} ${extra_options}"
