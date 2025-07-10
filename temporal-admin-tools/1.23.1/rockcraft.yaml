@@ -5,7 +5,7 @@ base: ubuntu@24.04 # the base environment for this rock
 version: '1.23.1' # just for humans. Semantic versioning is recommended
 summary: Rock for Temporal Admin Tools # 79 char long summary
 description: |
-    Temporal is a durable execution platform that enables developers to build scalable applications without sacrificing productivity or reliability. This image contains necessary tools to configure and administer a Temporal deployment.
+    This image contains necessary tools to configure and administer a Temporal server.
 
 platforms: # the platforms this rock should be built on and run on
     amd64:
