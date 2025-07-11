@@ -42,6 +42,10 @@ Furthermore, we have `just` commands to be able to pack from the project root. F
 just pack temporal-server/1.23.1
 ```
 
+## Versioning of artifacts in the rocks
+
+Each of the rocks hosted in this repository build temporal artifacts or other necessary tools. More than one of these rocks can be packed with the same artifact, e.g. both the temporal-server and temporal-admin-tools rocks have the temporal cli. It is necessary to ensure that when we bump the version of temporal cli in one of these rocks, we consider whether the version should be bumped in the other rocks that contain it too.
+
 ## Running a built Temporal rock
 
 To run the built rock in a K8s distribution, please ensure that `kubectl` has the proper configuration to interact with the K8s distribution.

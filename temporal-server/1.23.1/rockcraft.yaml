@@ -39,7 +39,7 @@ parts:
             bin/server: bin/temporal-server
     temporal-cli:
         plugin: go
-        source: https://github.com/temporalio/cli.git
+        source: https://github.com/temporalio/cli
         source-type: git
         source-tag: v1.3.0
         build-snaps:
@@ -48,7 +48,7 @@ parts:
             go build -ldflags "-X 'github.com/temporalio/cli/temporalcli.Version=1.3.0'" -o ${CRAFT_PART_INSTALL}/bin/temporal ./cmd/temporal
     temporal-server-rock-license:
         plugin: dump
-        source: https://github.com/canonical/temporal-rocks.git
+        source: https://github.com/canonical/temporal-rocks
         source-type: git
         organize:
             LICENSE: licenses/LICENSE-temporal-server-rock
@@ -65,7 +65,7 @@ parts:
             - licenses/LICENSE-temporal
     temporal-cli-license:
         plugin: dump
-        source: https://github.com/temporalio/cli.git
+        source: https://github.com/temporalio/cli
         source-type: git
         source-tag: v1.3.0
         organize:
