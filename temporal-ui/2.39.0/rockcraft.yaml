@@ -1,0 +1,68 @@
+name: temporal-ui
+# see https://documentation.ubuntu.com/rockcraft/en/1.12.0/explanation/bases/
+# for more information about bases and using 'bare' bases for chiselled rocks
+base: ubuntu@24.04 # the base environment for this rock
+version: '2.39.0' # just for humans. Semantic versioning is recommended
+summary: Rock for Temporal UI # 79 char long summary
+description: |
+    The Temporal UI provides a browser-based user interface for Temporal, allowing users to view Workflow Execution state, metadata, and debug their Temporal applications.
+platforms: # the platforms this rock should be built on and run on
+    amd64:
+
+services:
+    temporal-ui:
+        description: UI for Temporal
+        command: /usr/bin/ui-server start
+        working-dir: /home/ui-server
+        override: replace
+        startup: enabled
+        user: ubuntu
+
+checks:
+    temporal-ui-running:
+        override: replace
+        exec:
+            command: pgrep ui-server
+
+parts:
+    temporal-ui-server:
+        plugin: go
+        source: https://github.com/temporalio/ui
+        source-type: git
+        source-tag: v2.39.0
+        build-snaps:
+            - go/1.24/stable
+            - node/22/stable
+        override-build: |
+            set -euxo pipefail
+
+            npm install --global corepack@latest
+            corepack enable pnpm
+
+            pnpm install < <(yes | head -n 1)
+            pnpm build:server
+
+            cd server
+            go build -o ${CRAFT_PART_INSTALL}/bin/ui-server ./cmd/server/main.go
+    temporal-ui-rocks-license:
+        plugin: dump
+        source: https://github.com/canonical/temporal-rocks
+        source-type: git
+        organize:
+            LICENSE: licenses/LICENSE-temporal-ui-rock
+        stage:
+            - licenses/LICENSE-temporal-ui-rock
+    temporal-ui-license:
+        plugin: dump
+        source: https://github.com/temporalio/ui
+        source-type: git
+        organize:
+            LICENSE: licenses/LICENSE-temporal-ui
+        stage:
+            - licenses/LICENSE-temporal-ui
+    prerequisite-directories:
+        plugin: nil
+        source: .
+        source-type: local
+        override-build: |
+            mkdir -p ${CRAFT_PART_INSTALL}/home/ui-server

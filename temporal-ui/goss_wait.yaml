@@ -1,0 +1,5 @@
+process:
+  pebble:
+    running: true
+  ui-server:
+    running: true

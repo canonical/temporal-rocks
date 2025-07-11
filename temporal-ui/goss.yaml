@@ -1,0 +1,43 @@
+file:
+  /usr/bin/ui-server:
+    exists: true
+    path: /usr/bin/ui-server
+    mode: '0755'
+    owner: root
+    group: root
+    filetype: file
+  /licenses/LICENSE-temporal-ui-rock:
+    exists: true
+    path: /licenses/LICENSE-temporal-ui-rock
+    mode: '0644'
+    owner: root
+    group: root
+    filetype: file
+  /licenses/LICENSE-temporal-ui:
+    exists: true
+    path: /licenses/LICENSE-temporal-ui
+    mode: '0644'
+    owner: root
+    group: root
+    filetype: file
+process:
+  ui-server:
+    running: true
+command:
+  'ui-server --version':
+    exit-status: 0
+    exec: 'ui-server --version'
+    stdout:
+    - Temporal UI version 2.39.0
+    stderr: []
+    timeout: 1000
+    skip: false
+http:
+  http://localhost:8081:
+    status: 200
+    url: http://localhost:8081
+    no-follow-redirects: true
+    timeout: 1000
+    body: ["svelte"]
+    skip: false
+    method: GET
