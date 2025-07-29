@@ -61,9 +61,9 @@ process:
 command:
   'temporal operator cluster health':
     exit-status: 0
-    exec: 'temporal operator cluster health'
+    exec: 'pebble restart temporal-server; temporal operator cluster health'
     stdout:
-    - SERVING
+    - 'SERVING'
     stderr: []
     timeout: 1000
     skip: false
@@ -71,7 +71,7 @@ command:
     exit-status: 0
     exec: 'temporal --version'
     stdout:
-    - temporal version 1.3.0 (Server 1.27.1, UI 2.36.0)
+    - 'temporal version 1.3.0 (Server 1.27.1, UI 2.36.0)'
     stderr: []
     timeout: 1000
     skip: false
@@ -79,25 +79,26 @@ command:
     exit-status: 0
     exec: 'temporal-server --version'
     stdout:
-    - temporal version 1.23.1
+    - 'temporal version 1.23.1'
     stderr: []
     timeout: 1000
     skip: false
   'temporal server start-dev':
-    exit-status: 124
-    exec: 'pebble stop temporal-server && timeout 5 temporal server start-dev'
+    exit-status: 0
+    exec: 'pebble stop temporal-server && timeout 5 temporal server start-dev; echo "exit code: $?"; pebble start temporal-server'
     stdout:
-    - CLI 1.3.0 (Server 1.27.1, UI 2.36.0)
+    - 'CLI 1.3.0 (Server 1.27.1, UI 2.36.0)'
     - 'Server:  localhost:7233'
     - 'UI:      http://localhost:8233'
-    - "Stopping server..."
+    - 'Stopping server...'
+    - 'exit code: 124'
     stderr: []
     skip: false
   'temporal-sql-tool --version':
     exit-status: 0
     exec: 'temporal-sql-tool --version'
     stdout:
-    - temporal-sql-tool version 0.0.1
+    - 'temporal-sql-tool version 0.0.1'
     stderr: []
     timeout: 1000
     skip: false
@@ -105,7 +106,7 @@ command:
     exit-status: 0
     exec: 'tdbg --version'
     stdout:
-    - tdbg version 1.23.1
+    - 'tdbg version 1.23.1'
     stderr: []
     timeout: 1000
     skip: false

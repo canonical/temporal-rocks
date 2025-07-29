@@ -28,7 +28,7 @@ command:
     exit-status: 0
     exec: 'ui-server --version'
     stdout:
-    - Temporal UI version 2.39.0
+    - 'Temporal UI version 2.39.0'
     stderr: []
     timeout: 1000
     skip: false
