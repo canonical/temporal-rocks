@@ -34,7 +34,7 @@ parts:
         source-type: git
         source-tag: v1.23.1
         build-snaps:
-            - go/1.21/stable
+            - go/1.24/stable
         organize:
             bin/server: bin/temporal-server
     temporal-cli:
@@ -46,6 +46,24 @@ parts:
             - go/1.24/stable
         override-build: |
             go build -ldflags "-X 'github.com/temporalio/cli/temporalcli.Version=1.3.0'" -o ${CRAFT_PART_INSTALL}/bin/temporal ./cmd/temporal
+    temporal-sql-tool:
+        plugin: go
+        source: https://github.com/temporalio/temporal
+        source-subdir: cmd/tools/sql
+        source-type: git
+        source-tag: v1.23.1
+        build-snaps:
+            - go/1.24/stable
+        organize:
+            bin/sql: bin/temporal-sql-tool
+    tdbg:
+        plugin: go
+        source: https://github.com/temporalio/temporal
+        source-subdir: cmd/tools/tdbg
+        source-type: git
+        source-tag: v1.23.1
+        build-snaps:
+            - go/1.24/stable
     temporal-server-rock-license:
         plugin: dump
         source: https://github.com/canonical/temporal-rocks
@@ -54,14 +72,16 @@ parts:
             LICENSE: licenses/LICENSE-temporal-server-rock
         stage:
             - licenses/LICENSE-temporal-server-rock
-    temporal-license:
+    temporal-license-and-schema:
         plugin: dump
         source: https://github.com/temporalio/temporal
         source-type: git
         source-tag: v1.23.1
         organize:
+            schema: etc/temporal/schema
             LICENSE: licenses/LICENSE-temporal
         stage:
+            - etc/temporal/schema
             - licenses/LICENSE-temporal
     temporal-cli-license:
         plugin: dump
