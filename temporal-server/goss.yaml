@@ -55,6 +55,14 @@ file:
     owner: root
     group: root
     filetype: directory
+user:
+  ubuntu:
+    exists: true
+    home: /home/ubuntu
+    shell: /bin/bash
+group:
+  ubuntu:
+    exists: true
 process:
   temporal-server:
     running: true
