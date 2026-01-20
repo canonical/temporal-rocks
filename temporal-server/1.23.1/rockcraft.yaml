@@ -105,6 +105,7 @@ parts:
             - base-files
         override-build: |
             craftctl default
+            mkdir -p ${CRAFT_PART_INSTALL}/etc
             # Copy base passwd/group files to enable groupadd/useradd with --root
             cp /etc/passwd ${CRAFT_PART_INSTALL}/etc/passwd
             cp /etc/group ${CRAFT_PART_INSTALL}/etc/group
