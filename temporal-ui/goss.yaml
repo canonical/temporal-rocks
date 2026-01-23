@@ -20,6 +20,14 @@ file:
     owner: root
     group: root
     filetype: file
+user:
+  ubuntu:
+    exists: true
+    home: /home/ubuntu
+    shell: /bin/bash
+group:
+  ubuntu:
+    exists: true
 process:
   ui-server:
     running: true
