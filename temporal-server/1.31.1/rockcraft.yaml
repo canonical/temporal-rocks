@@ -45,7 +45,7 @@ parts:
         build-snaps:
             - go/1.26/stable
         override-build: |
-            go build -ldflags "-X 'github.com/temporalio/cli/temporalcli.Version=1.3.0'" -o ${CRAFT_PART_INSTALL}/bin/temporal ./cmd/temporal
+            go build -ldflags "-X 'github.com/temporalio/cli/internal/temporalcli.Version=1.7.2'" -o ${CRAFT_PART_INSTALL}/bin/temporal ./cmd/temporal
     temporal-sql-tool:
         plugin: go
         source: https://github.com/temporalio/temporal

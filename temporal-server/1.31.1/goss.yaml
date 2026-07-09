@@ -6,7 +6,7 @@ command:
     exit-status: 0
     exec: 'temporal --version'
     stdout:
-    - 'temporal version 0.0.0-DEV (Server 1.31.1, UI 2.49.1)'
+    - 'temporal version 1.7.2 (Server 1.31.1, UI 2.49.1)'
     stderr: []
     timeout: 1000
     skip: false
@@ -14,7 +14,7 @@ command:
     exit-status: 0
     exec: 'pebble stop temporal-server; timeout 5 temporal server start-dev; echo "exit code: $?"; pebble start temporal-server'
     stdout:
-    - 'CLI 0.0.0-DEV (Server 1.31.1, UI 2.49.1)'
+    - 'CLI 1.7.2 (Server 1.31.1, UI 2.49.1)'
     - 'Server:  localhost:7233'
     - 'UI:      http://localhost:8233'
     - 'Stopping server...'
