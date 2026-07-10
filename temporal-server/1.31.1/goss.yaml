@@ -17,7 +17,7 @@ command:
     - 'Temporal CLI 1.7.2 (Server 1.31.1, UI 2.49.1)'
     - 'Temporal Server:  localhost:7233'
     - 'Temporal UI:      http://localhost:8233'
-    - 'exit code: 0'
+    - 'exit code: 124'
     stderr: []
     skip: false
   'temporal-server --version':
