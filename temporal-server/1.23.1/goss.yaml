@@ -37,3 +37,11 @@ command:
     stderr: []
     timeout: 1000
     skip: false
+  'temporal-sql-tool --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool --version'
+    stdout:
+    - 'temporal-sql-tool version 0.0.1'
+    stderr: []
+    timeout: 1000
+    skip: false

@@ -14,11 +14,10 @@ command:
     exit-status: 0
     exec: 'pebble stop temporal-server; timeout 5 temporal server start-dev; echo "exit code: $?"; pebble start temporal-server'
     stdout:
-    - 'CLI 1.7.2 (Server 1.31.1, UI 2.49.1)'
-    - 'Server:  localhost:7233'
-    - 'UI:      http://localhost:8233'
-    - 'Stopping server...'
-    - 'exit code: 124'
+    - 'Temporal CLI 1.7.2 (Server 1.31.1, UI 2.49.1)'
+    - 'Temporal Server:  localhost:7233'
+    - 'Temporal UI:      http://localhost:8233'
+    - 'exit code: 0'
     stderr: []
     skip: false
   'temporal-server --version':
@@ -34,6 +33,14 @@ command:
     exec: 'tdbg --version'
     stdout:
     - 'tdbg version 1.31.1'
+    stderr: []
+    timeout: 1000
+    skip: false
+  'temporal-sql-tool --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool --version'
+    stdout:
+    - 'temporal-sql-tool version 1.31.1'
     stderr: []
     timeout: 1000
     skip: false
