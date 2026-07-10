@@ -41,9 +41,9 @@ run version: (start-local-registry) (pack version) (push-to-local-registry versi
 
 	just clone-temporal-repo $rock_version
 
-	extra_options="-d temporal/config/ -e TEMPORAL_ROOT=/etc/temporal -e TEMPORAL_ENVIRONMENT=development-sqlite"
+	extra_options="-d temporal/config/ -d ${rock_version}/goss.yaml -d goss_common.yaml -e TEMPORAL_ROOT=/etc/temporal -e TEMPORAL_ENVIRONMENT=development-sqlite"
 	goss_vars="GOSS_KUBECTL_BIN=\"$(which kubectl)\" GOSS_OPTS=\"--retry-timeout 60s --color\" GOSS_CONTAINER_PATH=\"/etc/temporal\""
-	
+
 	eval "env ${goss_vars} kgoss edit -i localhost:5000/temporal-server-dev:${rock_version} ${extra_options}"
 
 	rm -rf temporal
@@ -61,9 +61,9 @@ test version: (start-local-registry) (pack version) (push-to-local-registry vers
 
 	just clone-temporal-repo $rock_version
 
-	extra_options+="-d temporal/config/ -e TEMPORAL_ROOT=/etc/temporal -e TEMPORAL_ENVIRONMENT=development-sqlite"
+	extra_options="-d temporal/config/ -d ${rock_version}/goss.yaml -d goss_common.yaml -e TEMPORAL_ROOT=/etc/temporal -e TEMPORAL_ENVIRONMENT=development-sqlite"
 	goss_vars="GOSS_KUBECTL_BIN=\"$(which kubectl)\" GOSS_OPTS=\"--retry-timeout 60s\" GOSS_CONTAINER_PATH=\"/etc/temporal\""
-	
+
 	eval "env ${goss_vars} kgoss run -i localhost:5000/temporal-server-dev:${rock_version} ${extra_options}"
 
 	rm -rf temporal
