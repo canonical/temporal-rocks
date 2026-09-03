@@ -18,11 +18,14 @@ push-to-local-registry component version:
 	#!/usr/bin/bash
 	set -euox pipefail
 
-	rock_file=$(ls "${component}/${version}" | grep "\.rock")
-	version="$(yq '.version' ${component}/${version}/rockcraft.yaml)"
+	# directory name and rockcraft.yaml's declared version can differ, so look up
+	# the rock file by directory but tag the pushed image by the declared version.
+	directory="${version}"
+	rock_file=$(ls "${component}/${directory}" | grep "\.rock")
+	version="$(yq '.version' "${component}/${directory}/rockcraft.yaml")"
 
 	rockcraft.skopeo --insecure-policy copy --dest-tls-verify=false \
-		"oci-archive:${component}/${version}/${rock_file}" \
+		"oci-archive:${component}/${directory}/${rock_file}" \
 		"docker://localhost:5000/${component}-dev:${version}"
 
 [private]
