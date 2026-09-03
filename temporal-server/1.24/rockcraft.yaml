@@ -1,7 +1,7 @@
 name: temporal-server
 # see https://documentation.ubuntu.com/rockcraft/en/1.11.0/explanation/bases/
 # for more information about bases and using 'bare' bases for chiselled rocks
-base: ubuntu@24.04 # the base environment for this rock
+base: ubuntu@26.04 # the base environment for this rock
 version: '1.24.3' # just for humans. Semantic versioning is recommended
 summary: Rock for Temporal Server # 79 char long summary
 description: |
