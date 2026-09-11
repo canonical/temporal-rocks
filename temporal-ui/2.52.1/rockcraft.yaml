@@ -30,6 +30,9 @@ parts:
         source: https://github.com/temporalio/ui
         source-type: git
         source-tag: v2.52.1
+        overlay-packages:
+        # Overlay so update-ca-certificates runs (rockcraft#334).
+            - ca-certificates
         build-snaps:
             - go/1.26/stable
             - node/22/stable

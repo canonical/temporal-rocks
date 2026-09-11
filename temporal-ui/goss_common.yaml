@@ -6,6 +6,13 @@ file:
     owner: root
     group: root
     filetype: file
+  /etc/ssl/certs/ca-certificates.crt:
+    exists: true
+    path: /etc/ssl/certs/ca-certificates.crt
+    mode: '0644'
+    owner: root
+    group: root
+    filetype: file
   /licenses/LICENSE-temporal-ui-rock:
     exists: true
     path: /licenses/LICENSE-temporal-ui-rock
