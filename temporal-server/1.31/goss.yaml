@@ -24,7 +24,7 @@ command:
     exit-status: 0
     exec: 'temporal-server --version'
     stdout:
-    - 'temporal version 1.31.1'
+    - 'temporal version 1.31.2'
     stderr: []
     timeout: 1000
     skip: false
@@ -32,7 +32,7 @@ command:
     exit-status: 0
     exec: 'tdbg --version'
     stdout:
-    - 'tdbg version 1.31.1'
+    - 'tdbg version 1.31.2'
     stderr: []
     timeout: 1000
     skip: false
@@ -40,7 +40,7 @@ command:
     exit-status: 0
     exec: 'temporal-sql-tool --version'
     stdout:
-    - 'temporal-sql-tool version 1.31.1'
+    - 'temporal-sql-tool version 1.31.2'
     stderr: []
     timeout: 1000
     skip: false
