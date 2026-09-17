@@ -1,0 +1,326 @@
+name: temporal-server-upgrader
+# see https://documentation.ubuntu.com/rockcraft/en/1.11.0/explanation/bases/
+# for more information about bases and using 'bare' bases for chiselled rocks
+base: ubuntu@26.04
+# NOTE: This is NOT a general-purpose Temporal Server image. It bundles the
+# temporal-server and temporal-sql-tool binaries (plus schemas) for every
+# intermediate release between 1.24 and 1.30 so operators can step a datastore
+# through the 1.23 -> 1.31 upgrade path. Each binary is suffixed with its
+# release version, e.g. /bin/temporal-server-1.27.4.
+
+version: 'upgrade-1.24.3-to-1.30.6'
+summary: Multi-version Temporal Server upgrader (1.24-1.30)
+description: |
+    Upgrade-path toolbox rock. Contains the temporal-server and
+    temporal-sql-tool binaries and DB schemas for Temporal releases 1.24.3
+    through 1.30.6, each suffixed with its version, plus a single latest
+    temporal CLI and tdbg. Intended solely for running sequential schema/data
+    migrations when upgrading an existing Temporal deployment from 1.23 to 1.31
+    - it is not meant to run a production server.
+
+    Vulnerable leaf Go modules are pinned to patched versions at build time via
+    replace directives; the Go toolchain is pinned to the 1.26 channel for
+    stdlib fixes.
+
+platforms:
+    amd64:
+parts:
+    temporal-1.24:
+        plugin: go
+        source: https://github.com/temporalio/temporal
+        source-type: git
+        source-tag: v1.24.3
+        build-snaps:
+            - go/1.26/stable
+        override-build: |
+            set -eux
+            export GOFLAGS=-mod=mod
+            for r in \
+                golang.org/x/crypto@v0.56.0 \
+                golang.org/x/net@v0.56.0 \
+                golang.org/x/text@v0.39.0 \
+                golang.org/x/oauth2@v0.27.0 \
+                github.com/jackc/pgx/v5@v5.9.2 \
+                github.com/go-jose/go-jose/v4@v4.1.4 \
+                github.com/labstack/echo/v4@v4.15.3 \
+                github.com/apache/thrift@v0.24.0 \
+                github.com/sirupsen/logrus@v1.9.3 \
+                github.com/golang-jwt/jwt/v4@v4.5.2 \
+                filippo.io/edwards25519@v1.1.1 \
+                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
+                go mod edit -replace "${r%@*}=${r}"
+            done
+            go mod download
+            install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.24.3" ./cmd/server
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.24.3" ./cmd/tools/sql
+            cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.24.3"
+    temporal-1.25:
+        plugin: go
+        source: https://github.com/temporalio/temporal
+        source-type: git
+        source-tag: v1.25.2
+        build-snaps:
+            - go/1.26/stable
+        override-build: |
+            set -eux
+            export GOFLAGS=-mod=mod
+            for r in \
+                golang.org/x/crypto@v0.56.0 \
+                golang.org/x/net@v0.56.0 \
+                golang.org/x/text@v0.39.0 \
+                golang.org/x/oauth2@v0.27.0 \
+                github.com/jackc/pgx/v5@v5.9.2 \
+                github.com/go-jose/go-jose/v4@v4.1.4 \
+                github.com/labstack/echo/v4@v4.15.3 \
+                github.com/apache/thrift@v0.24.0 \
+                github.com/sirupsen/logrus@v1.9.3 \
+                github.com/golang-jwt/jwt/v4@v4.5.2 \
+                filippo.io/edwards25519@v1.1.1 \
+                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
+                go mod edit -replace "${r%@*}=${r}"
+            done
+            go mod download
+            install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.25.2" ./cmd/server
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.25.2" ./cmd/tools/sql
+            cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.25.2"
+    temporal-1.26:
+        plugin: go
+        source: https://github.com/temporalio/temporal
+        source-type: git
+        source-tag: v1.26.3
+        build-snaps:
+            - go/1.26/stable
+        override-build: |
+            set -eux
+            export GOFLAGS=-mod=mod
+            for r in \
+                golang.org/x/crypto@v0.56.0 \
+                golang.org/x/net@v0.56.0 \
+                golang.org/x/text@v0.39.0 \
+                golang.org/x/oauth2@v0.27.0 \
+                github.com/jackc/pgx/v5@v5.9.2 \
+                github.com/go-jose/go-jose/v4@v4.1.4 \
+                github.com/labstack/echo/v4@v4.15.3 \
+                github.com/apache/thrift@v0.24.0 \
+                github.com/sirupsen/logrus@v1.9.3 \
+                github.com/golang-jwt/jwt/v4@v4.5.2 \
+                filippo.io/edwards25519@v1.1.1 \
+                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
+                go mod edit -replace "${r%@*}=${r}"
+            done
+            go mod download
+            install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.26.3" ./cmd/server
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.26.3" ./cmd/tools/sql
+            cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.26.3"
+    temporal-1.27:
+        plugin: go
+        source: https://github.com/temporalio/temporal
+        source-type: git
+        source-tag: v1.27.4
+        build-snaps:
+            - go/1.26/stable
+        override-build: |
+            set -eux
+            export GOFLAGS=-mod=mod
+            for r in \
+                golang.org/x/crypto@v0.56.0 \
+                golang.org/x/net@v0.56.0 \
+                golang.org/x/text@v0.39.0 \
+                golang.org/x/oauth2@v0.27.0 \
+                github.com/jackc/pgx/v5@v5.9.2 \
+                github.com/go-jose/go-jose/v4@v4.1.4 \
+                github.com/labstack/echo/v4@v4.15.3 \
+                github.com/apache/thrift@v0.24.0 \
+                github.com/sirupsen/logrus@v1.9.3 \
+                github.com/golang-jwt/jwt/v4@v4.5.2 \
+                filippo.io/edwards25519@v1.1.1 \
+                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
+                go mod edit -replace "${r%@*}=${r}"
+            done
+            go mod download
+            install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.27.4" ./cmd/server
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.27.4" ./cmd/tools/sql
+            cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.27.4"
+    temporal-1.28:
+        plugin: go
+        source: https://github.com/temporalio/temporal
+        source-type: git
+        source-tag: v1.28.4
+        build-snaps:
+            - go/1.26/stable
+        override-build: |
+            set -eux
+            export GOFLAGS=-mod=mod
+            for r in \
+                golang.org/x/crypto@v0.56.0 \
+                golang.org/x/net@v0.56.0 \
+                golang.org/x/text@v0.39.0 \
+                golang.org/x/oauth2@v0.27.0 \
+                github.com/jackc/pgx/v5@v5.9.2 \
+                github.com/go-jose/go-jose/v4@v4.1.4 \
+                github.com/labstack/echo/v4@v4.15.3 \
+                github.com/apache/thrift@v0.24.0 \
+                github.com/sirupsen/logrus@v1.9.3 \
+                github.com/golang-jwt/jwt/v4@v4.5.2 \
+                filippo.io/edwards25519@v1.1.1 \
+                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
+                go mod edit -replace "${r%@*}=${r}"
+            done
+            go mod download
+            install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.28.4" ./cmd/server
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.28.4" ./cmd/tools/sql
+            cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.28.4"
+    temporal-1.29:
+        plugin: go
+        source: https://github.com/temporalio/temporal
+        source-type: git
+        source-tag: v1.29.7
+        build-snaps:
+            - go/1.26/stable
+        override-build: |
+            set -eux
+            export GOFLAGS=-mod=mod
+            for r in \
+                golang.org/x/crypto@v0.56.0 \
+                golang.org/x/net@v0.56.0 \
+                golang.org/x/text@v0.39.0 \
+                golang.org/x/oauth2@v0.27.0 \
+                github.com/jackc/pgx/v5@v5.9.2 \
+                github.com/go-jose/go-jose/v4@v4.1.4 \
+                github.com/labstack/echo/v4@v4.15.3 \
+                github.com/apache/thrift@v0.24.0 \
+                github.com/sirupsen/logrus@v1.9.3 \
+                github.com/golang-jwt/jwt/v4@v4.5.2 \
+                filippo.io/edwards25519@v1.1.1 \
+                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
+                go mod edit -replace "${r%@*}=${r}"
+            done
+            go mod download
+            install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.29.7" ./cmd/server
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.29.7" ./cmd/tools/sql
+            cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.29.7"
+    temporal-1.30:
+        plugin: go
+        source: https://github.com/temporalio/temporal
+        source-type: git
+        source-tag: v1.30.6
+        build-snaps:
+            - go/1.26/stable
+        override-build: |
+            set -eux
+            export GOFLAGS=-mod=mod
+            for r in \
+                golang.org/x/crypto@v0.56.0 \
+                golang.org/x/net@v0.56.0 \
+                golang.org/x/text@v0.39.0 \
+                golang.org/x/oauth2@v0.27.0 \
+                github.com/jackc/pgx/v5@v5.9.2 \
+                github.com/go-jose/go-jose/v4@v4.1.4 \
+                github.com/labstack/echo/v4@v4.15.3 \
+                github.com/apache/thrift@v0.24.0 \
+                github.com/sirupsen/logrus@v1.9.3 \
+                github.com/golang-jwt/jwt/v4@v4.5.2 \
+                filippo.io/edwards25519@v1.1.1 \
+                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
+                go mod edit -replace "${r%@*}=${r}"
+            done
+            go mod download
+            install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.30.6" ./cmd/server
+            go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.30.6" ./cmd/tools/sql
+            cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.30.6"
+
+    temporal-cli:
+        plugin: go
+        source: https://github.com/temporalio/cli
+        source-type: git
+        source-tag: v1.7.2
+        build-snaps:
+            - go/1.26/stable
+        override-build: |
+            set -eux
+            export GOFLAGS=-mod=mod
+            for r in \
+                golang.org/x/crypto@v0.56.0 \
+                golang.org/x/net@v0.56.0 \
+                golang.org/x/text@v0.39.0 \
+                golang.org/x/oauth2@v0.27.0 \
+                github.com/go-jose/go-jose/v4@v4.1.4 \
+                github.com/labstack/echo/v4@v4.15.3 \
+                github.com/apache/thrift@v0.24.0 \
+                github.com/sirupsen/logrus@v1.9.3 \
+                github.com/golang-jwt/jwt/v4@v4.5.2 \
+                filippo.io/edwards25519@v1.1.1; do
+                go mod edit -replace "${r%@*}=${r}"
+            done
+            go mod download
+            install -d "${CRAFT_PART_INSTALL}/bin"
+            go build -ldflags "-X 'github.com/temporalio/cli/internal/temporalcli.Version=1.7.2'" -o "${CRAFT_PART_INSTALL}/bin/temporal" ./cmd/temporal
+    tdbg:
+        plugin: go
+        source: https://github.com/temporalio/temporal
+        source-type: git
+        source-tag: v1.30.6
+        build-snaps:
+            - go/1.26/stable
+        override-build: |
+            set -eux
+            export GOFLAGS=-mod=mod
+            for r in \
+                golang.org/x/crypto@v0.56.0 \
+                golang.org/x/net@v0.56.0 \
+                golang.org/x/text@v0.39.0 \
+                golang.org/x/oauth2@v0.27.0 \
+                github.com/jackc/pgx/v5@v5.9.2 \
+                github.com/go-jose/go-jose/v4@v4.1.4 \
+                github.com/labstack/echo/v4@v4.15.3 \
+                github.com/apache/thrift@v0.24.0 \
+                github.com/sirupsen/logrus@v1.9.3 \
+                github.com/golang-jwt/jwt/v4@v4.5.2 \
+                filippo.io/edwards25519@v1.1.1 \
+                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
+                go mod edit -replace "${r%@*}=${r}"
+            done
+            go mod download
+            install -d "${CRAFT_PART_INSTALL}/bin"
+            go build -o "${CRAFT_PART_INSTALL}/bin/tdbg" ./cmd/tools/tdbg
+
+    temporal-cli-license:
+        plugin: dump
+        source: https://github.com/temporalio/cli
+        source-type: git
+        source-tag: v1.7.2
+        organize:
+            LICENSE: licenses/LICENSE-temporal-cli
+        stage:
+            - licenses/LICENSE-temporal-cli
+    temporal-license:
+        plugin: dump
+        source: https://github.com/temporalio/temporal
+        source-type: git
+        source-tag: v1.30.6
+        organize:
+            LICENSE: licenses/LICENSE-temporal
+        stage:
+            - licenses/LICENSE-temporal
+    temporal-server-rock-license:
+        plugin: dump
+        source: https://github.com/canonical/temporal-rocks
+        source-type: git
+        organize:
+            LICENSE: licenses/LICENSE-temporal-server-rock
+        stage:
+            - licenses/LICENSE-temporal-server-rock
+
+    prerequisite-directories:
+        plugin: nil
+        source: .
+        source-type: local
+        override-build: |
+            mkdir -p ${CRAFT_PART_INSTALL}/etc/temporal
