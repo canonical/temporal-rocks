@@ -1,0 +1,133 @@
+command:
+  # CLI & tdbg Checks
+  'temporal --version':
+    exit-status: 0
+    exec: 'temporal --version'
+    stdout:
+    - 'temporal version 1.7.2'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'tdbg --version':
+    exit-status: 0
+    exec: 'tdbg --version'
+    stdout:
+    - 'tdbg version 1.30.6'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  # Temporal Server Versioned Binaries
+  'temporal-server-1.24.3 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.24.3 --version'
+    stdout:
+    - 'temporal version 1.24.3'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-server-1.25.2 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.25.2 --version'
+    stdout:
+    - 'temporal version 1.25.2'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-server-1.26.3 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.26.3 --version'
+    stdout:
+    - 'temporal version 1.26.3'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-server-1.27.4 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.27.4 --version'
+    stdout:
+    - 'temporal version 1.27.4'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-server-1.28.4 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.28.4 --version'
+    stdout:
+    - 'temporal version 1.28.4'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-server-1.29.7 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.29.7 --version'
+    stdout:
+    - 'temporal version 1.29.7'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-server-1.30.6 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.30.6 --version'
+    stdout:
+    - 'temporal version 1.30.6'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  # Temporal SQL Tool Versioned Binaries
+  'temporal-sql-tool-1.24.3 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.24.3 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-sql-tool-1.25.2 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.25.2 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-sql-tool-1.26.3 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.26.3 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-sql-tool-1.27.4 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.27.4 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-sql-tool-1.28.4 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.28.4 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-sql-tool-1.29.7 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.29.7 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-sql-tool-1.30.6 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.30.6 --version'
+    stderr: []
+    timeout: 1000
+    skip: false

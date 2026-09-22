@@ -33,13 +33,21 @@ run version: (start-local-registry) (pack version) (push-to-local-registry versi
 	#!/usr/bin/bash
 	set -euxo pipefail
 
-	trap 'just stop-local-registry' EXIT
+	trap 'just stop-local-registry; [ -f goss_wait.yaml.bak ] && mv goss_wait.yaml.bak goss_wait.yaml' EXIT
 
 	# directory (goss/config file paths) can differ from the declared version (git tag, registry tag).
 	directory="${version}"
 	rock_version="$(yq '.version' "${directory}/rockcraft.yaml")"
+	clone_version="${rock_version}"
 
-	just clone-temporal-repo $rock_version
+	# Default to 1.24.3 for cloning base configs.
+	# Hide goss_wait.yaml because it checks for pebble service status, which this rock lacks.
+	if [ "${version}" = "upgrader" ]; then
+		clone_version="1.24.3"
+		[ -f goss_wait.yaml ] && mv goss_wait.yaml goss_wait.yaml.bak
+	fi
+
+	just clone-temporal-repo $clone_version
 
 	extra_options="-d temporal/config/ -d ${directory}/goss.yaml -d goss_common.yaml -e TEMPORAL_ROOT=/etc/temporal -e TEMPORAL_ENVIRONMENT=development-sqlite"
 	goss_vars="GOSS_KUBECTL_BIN=\"$(which kubectl)\" GOSS_OPTS=\"--retry-timeout 60s --color\" GOSS_CONTAINER_PATH=\"/etc/temporal\""
@@ -53,13 +61,21 @@ test version: (start-local-registry) (pack version) (push-to-local-registry vers
 	#!/usr/bin/bash
 	set -euxo pipefail
 
-	trap 'just stop-local-registry' EXIT
+	trap 'just stop-local-registry; [ -f goss_wait.yaml.bak ] && mv goss_wait.yaml.bak goss_wait.yaml' EXIT
 
 	# directory (goss/config file paths) can differ from the declared version (git tag, registry tag).
 	directory="${version}"
 	rock_version="$(yq '.version' "${directory}/rockcraft.yaml")"
+	clone_version="${rock_version}"
+	
+	# Default to 1.24.3 for cloning base configs.
+	# Hide goss_wait.yaml because it checks for pebble service status, which this rock lacks.
+	if [ "${version}" = "upgrader" ]; then
+		clone_version="1.24.3"
+		[ -f goss_wait.yaml ] && mv goss_wait.yaml goss_wait.yaml.bak
+	fi
 
-	just clone-temporal-repo $rock_version
+	just clone-temporal-repo $clone_version
 
 	extra_options="-d temporal/config/ -d ${directory}/goss.yaml -d goss_common.yaml -e TEMPORAL_ROOT=/etc/temporal -e TEMPORAL_ENVIRONMENT=development-sqlite"
 	goss_vars="GOSS_KUBECTL_BIN=\"$(which kubectl)\" GOSS_OPTS=\"--retry-timeout 60s\" GOSS_CONTAINER_PATH=\"/etc/temporal\""
