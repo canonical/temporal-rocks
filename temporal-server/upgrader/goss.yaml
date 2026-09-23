@@ -1,0 +1,195 @@
+command:
+  'temporal --version':
+    exit-status: 0
+    exec: 'temporal --version'
+    stdout:
+    - 'temporal version 1.7.2'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  # Temporal Server Versioned Binaries
+  'temporal-server-1.24.3 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.24.3 --version'
+    stdout:
+    - 'temporal version 1.24.3'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-server-1.25.2 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.25.2 --version'
+    stdout:
+    - 'temporal version 1.25.2'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-server-1.26.3 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.26.3 --version'
+    stdout:
+    - 'temporal version 1.26.3'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-server-1.27.4 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.27.4 --version'
+    stdout:
+    - 'temporal version 1.27.4'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-server-1.28.4 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.28.4 --version'
+    stdout:
+    - 'temporal version 1.28.4'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-server-1.29.7 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.29.7 --version'
+    stdout:
+    - 'temporal version 1.29.7'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-server-1.30.6 --version':
+    exit-status: 0
+    exec: 'temporal-server-1.30.6 --version'
+    stdout:
+    - 'temporal version 1.30.6'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  # Temporal SQL Tool Versioned Binaries
+  'temporal-sql-tool-1.24.3 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.24.3 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-sql-tool-1.25.2 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.25.2 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-sql-tool-1.26.3 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.26.3 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-sql-tool-1.27.4 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.27.4 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-sql-tool-1.28.4 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.28.4 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-sql-tool-1.29.7 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.29.7 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  'temporal-sql-tool-1.30.6 --version':
+    exit-status: 0
+    exec: 'temporal-sql-tool-1.30.6 --version'
+    stderr: []
+    timeout: 1000
+    skip: false
+
+  # All versioned binaries and schema roots are present
+  'versioned upgrade artifacts':
+    exit-status: 0
+    exec: |
+      for v in 1.24.3 1.25.2 1.26.3 1.27.4 1.28.4 1.29.7 1.30.6; do
+        for tool in temporal-server temporal-sql-tool tdbg; do
+          test -x "/bin/$tool-$v" || exit 1
+        done
+        test -d "/etc/temporal/schema-$v" || exit 1
+      done
+      test -x /bin/temporal
+    timeout: 10000
+
+  # PostgreSQL v12 default and visibility migration trees
+  'versioned PostgreSQL schemas':
+    exit-status: 0
+    exec: |
+      for v in 1.24.3 1.25.2 1.26.3 1.27.4 1.28.4 1.29.7 1.30.6; do
+        for store in temporal visibility; do
+          dir="/etc/temporal/schema-$v/postgresql/v12/$store/versioned"
+          test -d "$dir" || exit 1
+          test -n "$(find "$dir" -type f -print -quit)" || exit 1
+        done
+      done
+    timeout: 10000
+
+  # Every versioned executable starts and accepts --help
+  'versioned binary startup':
+    exit-status: 0
+    exec: |
+      for v in 1.24.3 1.25.2 1.26.3 1.27.4 1.28.4 1.29.7 1.30.6; do
+        for tool in temporal-server temporal-sql-tool tdbg; do
+          "/bin/$tool-$v" --help >/dev/null 2>&1 || exit 1
+        done
+      done
+    timeout: 30000
+
+      # The shared CLI starts and exposes its operator commands.
+  'temporal CLI commands':
+    exit-status: 0
+    exec: |
+      /bin/temporal --help >/dev/null 2>&1 &&
+      /bin/temporal operator --help >/dev/null 2>&1
+    timeout: 10000
+
+  # Each SQL tool exposes the schema migration command.
+  'versioned SQL migration commands':
+    exit-status: 0
+    exec: |
+      for v in 1.24.3 1.25.2 1.26.3 1.27.4 1.28.4 1.29.7 1.30.6; do
+        "/bin/temporal-sql-tool-$v" update-schema --help >/dev/null 2>&1 ||
+          exit 1
+      done
+    timeout: 30000
+
+  # Each matching tdbg exposes its administrative command tree.
+  'versioned tdbg commands':
+    exit-status: 0
+    exec: |
+      for v in 1.24.3 1.25.2 1.26.3 1.27.4 1.28.4 1.29.7 1.30.6; do
+        "/bin/tdbg-$v" --help >/dev/null 2>&1 || exit 1
+      done
+    timeout: 30000
+
+  'bundled licenses':
+    exit-status: 0
+    exec: |
+      test -s /licenses/LICENSE-temporal &&
+      test -s /licenses/LICENSE-temporal-cli &&
+      test -s /licenses/LICENSE-temporal-server-rock
+    timeout: 1000
