@@ -11,16 +11,14 @@ base: ubuntu@26.04
 version: 'upgrade-1.24.3-to-1.30.6'
 summary: Multi-version Temporal Server upgrader (1.24-1.30)
 description: |
-    Upgrade-path toolbox rock. Contains the temporal-server and
-    temporal-sql-tool binaries and DB schemas for Temporal releases 1.24.3
-    through 1.30.6, each suffixed with its version, plus a single latest
-    temporal CLI and tdbg. Intended solely for running sequential schema/data
-    migrations when upgrading an existing Temporal deployment from 1.23 to 1.31
-    - it is not meant to run a production server.
+    Upgrade-path toolbox rock containing version-matched temporal-server,
+    temporal-sql-tool, and tdbg binaries and DB schemas for Temporal releases
+    1.24.3 through 1.30.6, plus Temporal CLI 1.7.2.
 
-    Vulnerable leaf Go modules are pinned to patched versions at build time via
-    replace directives; the Go toolchain is pinned to the 1.26 channel for
-    stdlib fixes.
+    Intended for sequential upgrade hops from Temporal 1.23 toward 1.31.
+    The deployment must reach the latest required 1.23 patch before the first
+    hop. The target 1.31 release supplies its own server and any required
+    schema tooling. This rock is not intended to run a production server.
 
 platforms:
     amd64:
@@ -34,12 +32,12 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            
 
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.24.3" ./cmd/server
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.24.3" ./cmd/tools/sql
+            go build -o "${CRAFT_PART_INSTALL}/bin/tdbg-1.24.3" ./cmd/tools/tdbg
             cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.24.3"
     temporal-1.25:
         plugin: go
@@ -50,11 +48,12 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            
+
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.25.2" ./cmd/server
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.25.2" ./cmd/tools/sql
+            go build -o "${CRAFT_PART_INSTALL}/bin/tdbg-1.25.2" ./cmd/tools/tdbg
             cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.25.2"
     temporal-1.26:
         plugin: go
@@ -65,12 +64,12 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            
 
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.26.3" ./cmd/server
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.26.3" ./cmd/tools/sql
+            go build -o "${CRAFT_PART_INSTALL}/bin/tdbg-1.26.3" ./cmd/tools/tdbg
             cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.26.3"
     temporal-1.27:
         plugin: go
@@ -81,12 +80,12 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            
 
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.27.4" ./cmd/server
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.27.4" ./cmd/tools/sql
+            go build -o "${CRAFT_PART_INSTALL}/bin/tdbg-1.27.4" ./cmd/tools/tdbg
             cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.27.4"
     temporal-1.28:
         plugin: go
@@ -97,11 +96,12 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            
+
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.28.4" ./cmd/server
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.28.4" ./cmd/tools/sql
+            go build -o "${CRAFT_PART_INSTALL}/bin/tdbg-1.28.4" ./cmd/tools/tdbg
             cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.28.4"
     temporal-1.29:
         plugin: go
@@ -112,11 +112,12 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            
+
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.29.7" ./cmd/server
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.29.7" ./cmd/tools/sql
+            go build -o "${CRAFT_PART_INSTALL}/bin/tdbg-1.29.7" ./cmd/tools/tdbg
             cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.29.7"
     temporal-1.30:
         plugin: go
@@ -127,11 +128,12 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            
+
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.30.6" ./cmd/server
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-sql-tool-1.30.6" ./cmd/tools/sql
+            go build -o "${CRAFT_PART_INSTALL}/bin/tdbg-1.30.6" ./cmd/tools/tdbg
             cp -r schema "${CRAFT_PART_INSTALL}/etc/temporal/schema-1.30.6"
 
     temporal-cli:
@@ -143,23 +145,12 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            
+
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin"
-            go build -ldflags "-X 'github.com/temporalio/cli/internal/temporalcli.Version=1.7.2'" -o "${CRAFT_PART_INSTALL}/bin/temporal" ./cmd/temporal
-    tdbg:
-        plugin: go
-        source: https://github.com/temporalio/temporal
-        source-type: git
-        source-tag: v1.30.6
-        build-snaps:
-            - go/1.26/stable
-        override-build: |
-            set -eux
-            
-            go mod download
-            install -d "${CRAFT_PART_INSTALL}/bin"
-            go build -o "${CRAFT_PART_INSTALL}/bin/tdbg" ./cmd/tools/tdbg
+            go build -ldflags \
+            "-X 'github.com/temporalio/cli/internal/temporalcli.Version=1.7.2'" \
+            -o "${CRAFT_PART_INSTALL}/bin/temporal" ./cmd/temporal
 
     temporal-cli-license:
         plugin: dump

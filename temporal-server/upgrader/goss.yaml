@@ -131,3 +131,39 @@ command:
     stderr: []
     timeout: 1000
     skip: false
+  # All versioned binaries and schema roots are present
+  'versioned upgrade artifacts':
+    exit-status: 0
+    exec: |
+      for v in 1.24.3 1.25.2 1.26.3 1.27.4 1.28.4 1.29.7 1.30.6; do
+        for tool in temporal-server temporal-sql-tool tdbg; do
+          test -x "/bin/$tool-$v" || exit 1
+        done
+        test -d "/etc/temporal/schema-$v" || exit 1
+      done
+      test -x /bin/temporal
+    timeout: 10000
+
+  # PostgreSQL v12 default and visibility migration trees
+  'versioned PostgreSQL schemas':
+    exit-status: 0
+    exec: |
+      for v in 1.24.3 1.25.2 1.26.3 1.27.4 1.28.4 1.29.7 1.30.6; do
+        for store in temporal visibility; do
+          dir="/etc/temporal/schema-$v/postgresql/v12/$store/versioned"
+          test -d "$dir" || exit 1
+          test -n "$(find "$dir" -type f -print -quit)" || exit 1
+        done
+      done
+    timeout: 10000
+
+  # Every versioned executable starts and accepts --help
+  'versioned binary startup':
+    exit-status: 0
+    exec: |
+      for v in 1.24.3 1.25.2 1.26.3 1.27.4 1.28.4 1.29.7 1.30.6; do
+        for tool in temporal-server temporal-sql-tool tdbg; do
+          "/bin/$tool-$v" --help >/dev/null 2>&1 || exit 1
+        done
+      done
+    timeout: 30000
