@@ -34,22 +34,8 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            export GOFLAGS=-mod=mod
-            for r in \
-                golang.org/x/crypto@v0.56.0 \
-                golang.org/x/net@v0.56.0 \
-                golang.org/x/text@v0.39.0 \
-                golang.org/x/oauth2@v0.27.0 \
-                github.com/jackc/pgx/v5@v5.9.2 \
-                github.com/go-jose/go-jose/v4@v4.1.4 \
-                github.com/labstack/echo/v4@v4.15.3 \
-                github.com/apache/thrift@v0.24.0 \
-                github.com/sirupsen/logrus@v1.9.3 \
-                github.com/golang-jwt/jwt/v4@v4.5.2 \
-                filippo.io/edwards25519@v1.1.1 \
-                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
-                go mod edit -replace "${r%@*}=${r}"
-            done
+            
+
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.24.3" ./cmd/server
@@ -64,22 +50,7 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            export GOFLAGS=-mod=mod
-            for r in \
-                golang.org/x/crypto@v0.56.0 \
-                golang.org/x/net@v0.56.0 \
-                golang.org/x/text@v0.39.0 \
-                golang.org/x/oauth2@v0.27.0 \
-                github.com/jackc/pgx/v5@v5.9.2 \
-                github.com/go-jose/go-jose/v4@v4.1.4 \
-                github.com/labstack/echo/v4@v4.15.3 \
-                github.com/apache/thrift@v0.24.0 \
-                github.com/sirupsen/logrus@v1.9.3 \
-                github.com/golang-jwt/jwt/v4@v4.5.2 \
-                filippo.io/edwards25519@v1.1.1 \
-                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
-                go mod edit -replace "${r%@*}=${r}"
-            done
+            
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.25.2" ./cmd/server
@@ -94,22 +65,8 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            export GOFLAGS=-mod=mod
-            for r in \
-                golang.org/x/crypto@v0.56.0 \
-                golang.org/x/net@v0.56.0 \
-                golang.org/x/text@v0.39.0 \
-                golang.org/x/oauth2@v0.27.0 \
-                github.com/jackc/pgx/v5@v5.9.2 \
-                github.com/go-jose/go-jose/v4@v4.1.4 \
-                github.com/labstack/echo/v4@v4.15.3 \
-                github.com/apache/thrift@v0.24.0 \
-                github.com/sirupsen/logrus@v1.9.3 \
-                github.com/golang-jwt/jwt/v4@v4.5.2 \
-                filippo.io/edwards25519@v1.1.1 \
-                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
-                go mod edit -replace "${r%@*}=${r}"
-            done
+            
+
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.26.3" ./cmd/server
@@ -124,22 +81,8 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            export GOFLAGS=-mod=mod
-            for r in \
-                golang.org/x/crypto@v0.56.0 \
-                golang.org/x/net@v0.56.0 \
-                golang.org/x/text@v0.39.0 \
-                golang.org/x/oauth2@v0.27.0 \
-                github.com/jackc/pgx/v5@v5.9.2 \
-                github.com/go-jose/go-jose/v4@v4.1.4 \
-                github.com/labstack/echo/v4@v4.15.3 \
-                github.com/apache/thrift@v0.24.0 \
-                github.com/sirupsen/logrus@v1.9.3 \
-                github.com/golang-jwt/jwt/v4@v4.5.2 \
-                filippo.io/edwards25519@v1.1.1 \
-                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
-                go mod edit -replace "${r%@*}=${r}"
-            done
+            
+
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.27.4" ./cmd/server
@@ -154,22 +97,7 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            export GOFLAGS=-mod=mod
-            for r in \
-                golang.org/x/crypto@v0.56.0 \
-                golang.org/x/net@v0.56.0 \
-                golang.org/x/text@v0.39.0 \
-                golang.org/x/oauth2@v0.27.0 \
-                github.com/jackc/pgx/v5@v5.9.2 \
-                github.com/go-jose/go-jose/v4@v4.1.4 \
-                github.com/labstack/echo/v4@v4.15.3 \
-                github.com/apache/thrift@v0.24.0 \
-                github.com/sirupsen/logrus@v1.9.3 \
-                github.com/golang-jwt/jwt/v4@v4.5.2 \
-                filippo.io/edwards25519@v1.1.1 \
-                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
-                go mod edit -replace "${r%@*}=${r}"
-            done
+            
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.28.4" ./cmd/server
@@ -184,22 +112,7 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            export GOFLAGS=-mod=mod
-            for r in \
-                golang.org/x/crypto@v0.56.0 \
-                golang.org/x/net@v0.56.0 \
-                golang.org/x/text@v0.39.0 \
-                golang.org/x/oauth2@v0.27.0 \
-                github.com/jackc/pgx/v5@v5.9.2 \
-                github.com/go-jose/go-jose/v4@v4.1.4 \
-                github.com/labstack/echo/v4@v4.15.3 \
-                github.com/apache/thrift@v0.24.0 \
-                github.com/sirupsen/logrus@v1.9.3 \
-                github.com/golang-jwt/jwt/v4@v4.5.2 \
-                filippo.io/edwards25519@v1.1.1 \
-                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
-                go mod edit -replace "${r%@*}=${r}"
-            done
+            
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.29.7" ./cmd/server
@@ -214,22 +127,7 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            export GOFLAGS=-mod=mod
-            for r in \
-                golang.org/x/crypto@v0.56.0 \
-                golang.org/x/net@v0.56.0 \
-                golang.org/x/text@v0.39.0 \
-                golang.org/x/oauth2@v0.27.0 \
-                github.com/jackc/pgx/v5@v5.9.2 \
-                github.com/go-jose/go-jose/v4@v4.1.4 \
-                github.com/labstack/echo/v4@v4.15.3 \
-                github.com/apache/thrift@v0.24.0 \
-                github.com/sirupsen/logrus@v1.9.3 \
-                github.com/golang-jwt/jwt/v4@v4.5.2 \
-                filippo.io/edwards25519@v1.1.1 \
-                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
-                go mod edit -replace "${r%@*}=${r}"
-            done
+            
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin" "${CRAFT_PART_INSTALL}/etc/temporal"
             go build -o "${CRAFT_PART_INSTALL}/bin/temporal-server-1.30.6" ./cmd/server
@@ -245,20 +143,7 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            export GOFLAGS=-mod=mod
-            for r in \
-                golang.org/x/crypto@v0.56.0 \
-                golang.org/x/net@v0.56.0 \
-                golang.org/x/text@v0.39.0 \
-                golang.org/x/oauth2@v0.27.0 \
-                github.com/go-jose/go-jose/v4@v4.1.4 \
-                github.com/labstack/echo/v4@v4.15.3 \
-                github.com/apache/thrift@v0.24.0 \
-                github.com/sirupsen/logrus@v1.9.3 \
-                github.com/golang-jwt/jwt/v4@v4.5.2 \
-                filippo.io/edwards25519@v1.1.1; do
-                go mod edit -replace "${r%@*}=${r}"
-            done
+            
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin"
             go build -ldflags "-X 'github.com/temporalio/cli/internal/temporalcli.Version=1.7.2'" -o "${CRAFT_PART_INSTALL}/bin/temporal" ./cmd/temporal
@@ -271,22 +156,7 @@ parts:
             - go/1.26/stable
         override-build: |
             set -eux
-            export GOFLAGS=-mod=mod
-            for r in \
-                golang.org/x/crypto@v0.56.0 \
-                golang.org/x/net@v0.56.0 \
-                golang.org/x/text@v0.39.0 \
-                golang.org/x/oauth2@v0.27.0 \
-                github.com/jackc/pgx/v5@v5.9.2 \
-                github.com/go-jose/go-jose/v4@v4.1.4 \
-                github.com/labstack/echo/v4@v4.15.3 \
-                github.com/apache/thrift@v0.24.0 \
-                github.com/sirupsen/logrus@v1.9.3 \
-                github.com/golang-jwt/jwt/v4@v4.5.2 \
-                filippo.io/edwards25519@v1.1.1 \
-                github.com/aws/aws-sdk-go-v2/service/lambda@v1.88.5; do
-                go mod edit -replace "${r%@*}=${r}"
-            done
+            
             go mod download
             install -d "${CRAFT_PART_INSTALL}/bin"
             go build -o "${CRAFT_PART_INSTALL}/bin/tdbg" ./cmd/tools/tdbg
