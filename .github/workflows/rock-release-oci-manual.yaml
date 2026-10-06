@@ -1,0 +1,86 @@
+name: Release Rock to OCI Factory (Manual)
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/rock-release-oci-manual.yaml"
+
+  workflow_dispatch:
+    inputs:
+      rock_directory:
+        description: "Path to rock directory (e.g. temporal-ui/2.52.1 or temporal-server/1.31.1)"
+        required: true
+        type: string
+      risk:
+        description: "OCI risk track"
+        required: true
+        default: "stable"
+        type: choice
+        options:
+          - stable
+          - candidate
+          - beta
+          - edge
+      support:
+        description: "Support level"
+        required: true
+        default: "minor"
+        type: choice
+        options:
+          - minor
+          - major
+          - patch
+
+jobs:
+  validate-and-generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate rock path and extract metadata
+        id: meta
+        run: |
+          ROCK_DIR="${{ inputs.rock_directory }}"
+          ROCK_DIR="${ROCK_DIR#./}"
+          ROCK_DIR="${ROCK_DIR%/}"
+
+          if [[ ! -f "$ROCK_DIR/rockcraft.yaml" ]]; then
+            echo "Error: $ROCK_DIR/rockcraft.yaml does not exist" >&2
+            exit 1
+          fi
+
+          COMPONENT="$(echo "$ROCK_DIR" | cut -d/ -f1)"
+
+          eval $(python3 -c "
+          import yaml
+          with open('$ROCK_DIR/rockcraft.yaml') as f:
+              d = yaml.safe_load(f)
+          v = d.get('version', '')
+          b = d.get('base', '')
+          if b == 'bare':
+              b = d.get('build-base', '')
+          b = b.split('@')[-1]
+          print(f'VERSION=\"{v}\"')
+          print(f'BASE=\"{b}\"')
+          ")
+
+          echo "component=$COMPONENT" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "base=$BASE" >> $GITHUB_OUTPUT
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Generate OCI Factory Manifest
+        run: |
+          cd "${{ steps.meta.outputs.component }}"
+          uvx --from=git+https://github.com/lucabello/noctua noctua rock manifest canonical/temporal-rocks \
+            --commit "${{ github.sha }}" \
+            --version "${{ steps.meta.outputs.version }}" \
+            --base "${{ steps.meta.outputs.base }}" \
+            --risk "${{ inputs.risk }}" \
+            --support "${{ inputs.support }}" \
+            --directory "${{ steps.meta.outputs.component }}"
