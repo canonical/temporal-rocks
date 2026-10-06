@@ -89,7 +89,7 @@ jobs:
           echo "base=$BASE"
           echo "risk=$RISK"
           echo "support=$SUPPORT"
-          
+
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
           echo "component=$COMPONENT" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
@@ -98,15 +98,19 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
-      - name: Generate OCI Factory Manifest
+      - name: Generate manifest in OCI Factory checkout
         run: |
           IMAGE_NAME="${{ steps.meta.outputs.name }}"
-          MANIFEST_DIR="${RUNNER_TEMP}/oci-factory/oci/${IMAGE_NAME}"
-          MANIFEST_FILE="${MANIFEST_DIR}/image.yaml"
+          OCI_DIR="${RUNNER_TEMP}/oci-factory"
+
+          git clone --depth 1 https://github.com/canonical/oci-factory.git "$OCI_DIR"
+
+          MANIFEST_DIR="$OCI_DIR/oci/$IMAGE_NAME"
+          MANIFEST_FILE="$MANIFEST_DIR/image.yaml"
 
           mkdir -p "$MANIFEST_DIR"
 
-          cd "${{ steps.meta.outputs.component }}"
+          cd "${{ github.workspace }}/${{ steps.meta.outputs.component }}"
 
           uvx --from=git+https://github.com/lucabello/noctua \
             noctua rock manifest canonical/temporal-rocks \
@@ -118,14 +122,6 @@ jobs:
             --directory "${{ steps.meta.outputs.component }}" \
             | tee "$MANIFEST_FILE"
 
-          echo
-          echo "Manifest written to:"
-          echo "$MANIFEST_FILE"
-
-          echo
-          echo "Generated manifest:"
-          cat "$MANIFEST_FILE"
-
           UPLOAD_COUNT="$(python3 -c "
           import yaml
           with open('$MANIFEST_FILE') as f:
@@ -134,8 +130,14 @@ jobs:
           ")"
 
           if [[ "$UPLOAD_COUNT" -eq 0 ]]; then
-              echo "Nothing to upload"
-              exit 0
+            echo "Nothing to upload"
+            exit 0
           fi
 
           echo "Upload entries: $UPLOAD_COUNT"
+
+          echo
+          echo "OCI Factory change:"
+          cd "$OCI_DIR"
+          git status --short
+          git diff -- "oci/$IMAGE_NAME/image.yaml"
