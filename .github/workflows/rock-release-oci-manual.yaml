@@ -43,7 +43,7 @@ jobs:
       - name: Validate rock path and extract metadata
         id: meta
         run: |
-          ROCK_DIR="${{ inputs.rock_directory }}"
+          ROCK_DIR="${{ inputs.rock_directory || 'temporal-ui/2.52.1' }}"
           ROCK_DIR="${ROCK_DIR#./}"
           ROCK_DIR="${ROCK_DIR%/}"
 
