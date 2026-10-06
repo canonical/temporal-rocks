@@ -141,3 +141,37 @@ jobs:
           cd "$OCI_DIR"
           git status --short
           git diff -- "oci/$IMAGE_NAME/image.yaml"
+      
+      - name: Create OCI Factory commit locally
+        run: |
+          IMAGE_NAME="${{ steps.meta.outputs.name }}"
+          OCI_DIR="${RUNNER_TEMP}/oci-factory"
+
+          cd "$OCI_DIR"
+
+          git config user.name "temporal-rocks-ci"
+          git config user.email "temporal-rocks-ci@users.noreply.github.com"
+
+          BRANCH_NAME="update-${IMAGE_NAME}"
+          git checkout -b "$BRANCH_NAME"
+
+          git add "oci/${IMAGE_NAME}/image.yaml"
+
+          if git diff --cached --quiet; then
+            echo "Nothing changed in OCI Factory"
+            exit 0
+          fi
+
+          git commit -m "chore: Add new ${IMAGE_NAME} releases"
+
+          echo
+          echo "Created commit:"
+          git log -1 --oneline
+
+          echo
+          echo "Files in commit:"
+          git diff-tree --no-commit-id --name-only -r HEAD
+
+          echo
+          echo "Commit contents:"
+          git show --stat --oneline HEAD
