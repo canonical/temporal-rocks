@@ -34,6 +34,12 @@ on:
 jobs:
   validate-and-generate:
     runs-on: ubuntu-latest
+
+    env:
+      ROCK_DIR: ${{ inputs.rock_directory || 'temporal-ui/2.52.1' }}
+      RISK: ${{ inputs.risk || 'stable' }}
+      SUPPORT: ${{ inputs.support || 'minor' }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -43,7 +49,6 @@ jobs:
       - name: Validate rock path and extract metadata
         id: meta
         run: |
-          ROCK_DIR="${{ inputs.rock_directory || 'temporal-ui/2.52.1' }}"
           ROCK_DIR="${ROCK_DIR#./}"
           ROCK_DIR="${ROCK_DIR%/}"
 
@@ -67,6 +72,12 @@ jobs:
           print(f'BASE=\"{b}\"')
           ")
 
+          echo "component=$COMPONENT"
+          echo "version=$VERSION"
+          echo "base=$BASE"
+          echo "risk=$RISK"
+          echo "support=$SUPPORT"
+
           echo "component=$COMPONENT" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "base=$BASE" >> $GITHUB_OUTPUT
@@ -81,6 +92,6 @@ jobs:
             --commit "${{ github.sha }}" \
             --version "${{ steps.meta.outputs.version }}" \
             --base "${{ steps.meta.outputs.base }}" \
-            --risk "${{ inputs.risk }}" \
-            --support "${{ inputs.support }}" \
+            --risk "$RISK" \
+            --support "$SUPPORT" \
             --directory "${{ steps.meta.outputs.component }}"
