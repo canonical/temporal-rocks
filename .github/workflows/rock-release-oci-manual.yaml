@@ -7,6 +7,10 @@ on:
       - "temporal-ui/**"
       - ".github/workflows/rock-release-oci-manual.yaml"
 
+permissions:
+  contents: read
+  pull-requests: read
+  
 jobs:
   changed-rocks:
     uses: canonical/workflows-team/.github/workflows/get_modified_directories_by_marker.yaml@main
