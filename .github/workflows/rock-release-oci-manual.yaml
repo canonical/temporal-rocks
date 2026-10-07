@@ -1,177 +1,35 @@
-name: Release Rock to OCI Factory (Manual)
+name: Test changed rocks with OCI Factory
 
 on:
   pull_request:
     paths:
+      - "temporal-server/**"
+      - "temporal-ui/**"
       - ".github/workflows/rock-release-oci-manual.yaml"
 
-  workflow_dispatch:
-    inputs:
-      rock_directory:
-        description: "Path to rock directory (e.g. temporal-ui/2.52.1 or temporal-server/1.31.1)"
-        required: true
-        type: string
-      risk:
-        description: "OCI risk track"
-        required: true
-        default: "stable"
-        type: choice
-        options:
-          - stable
-          - candidate
-          - beta
-          - edge
-      support:
-        description: "Support level"
-        required: true
-        default: "minor"
-        type: choice
-        options:
-          - minor
-          - major
-          - patch
-
 jobs:
-  validate-and-generate:
-    runs-on: ubuntu-latest
+  changed-rocks:
+    uses: canonical/workflows-team/.github/workflows/get_modified_directories_by_marker.yaml@main
+    with:
+      marker: rockcraft.yaml
+      base-ref: ${{ github.event.pull_request.base.sha }}
 
-    env:
-      ROCK_DIR: ${{ inputs.rock_directory || 'temporal-ui/2.52.1' }}
-      RISK: ${{ inputs.risk || 'stable' }}
-      SUPPORT: ${{ inputs.support || 'minor' }}
+  release:
+    name: Dry-run ${{ matrix.rock-directory }}
+    needs: changed-rocks
+    if: ${{ needs.changed-rocks.outputs.paths != '[]' && needs.changed-rocks.outputs.paths != '' }}
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    strategy:
+      fail-fast: false
+      matrix:
+        rock-directory: ${{ fromJSON(needs.changed-rocks.outputs.paths) }}
 
-      - name: Validate rock path and extract metadata
-        id: meta
-        run: |
-          ROCK_DIR="${ROCK_DIR#./}"
-          ROCK_DIR="${ROCK_DIR%/}"
+    uses: canonical/workflows-team/.github/workflows/rock-release-oci-factory.yaml@test-oci-workflow
 
-          if [[ ! -f "$ROCK_DIR/rockcraft.yaml" ]]; then
-            echo "Error: $ROCK_DIR/rockcraft.yaml does not exist" >&2
-            exit 1
-          fi
-
-          COMPONENT="$(echo "$ROCK_DIR" | cut -d/ -f1)"
-
-          eval $(python3 -c "
-          import yaml
-          with open('$ROCK_DIR/rockcraft.yaml') as f:
-              d = yaml.safe_load(f)
-          v = d.get('version', '')
-          b = d.get('base', '')
-          if b == 'bare':
-              b = d.get('build-base', '')
-          b = b.split('@')[-1]
-          print(f'VERSION=\"{v}\"')
-          print(f'BASE=\"{b}\"')
-          ")
-
-          NAME="$(python3 -c "
-          import yaml
-          with open('$ROCK_DIR/rockcraft.yaml') as f:
-              print(yaml.safe_load(f).get('name', ''))
-          ")"
-          if [[ -z "$NAME" ]]; then
-              echo "Error: rockcraft.yaml has no name" >&2
-              exit 1
-          fi
-
-          
-          echo "name=$NAME"
-          echo "component=$COMPONENT"
-          echo "version=$VERSION"
-          echo "base=$BASE"
-          echo "risk=$RISK"
-          echo "support=$SUPPORT"
-
-          echo "name=$NAME" >> "$GITHUB_OUTPUT"
-          echo "component=$COMPONENT" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "base=$BASE" >> $GITHUB_OUTPUT
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-
-      - name: Generate manifest in OCI Factory checkout
-        run: |
-          IMAGE_NAME="${{ steps.meta.outputs.name }}"
-          OCI_DIR="${RUNNER_TEMP}/oci-factory"
-
-          git clone --depth 1 https://github.com/canonical/oci-factory.git "$OCI_DIR"
-
-          MANIFEST_DIR="$OCI_DIR/oci/$IMAGE_NAME"
-          MANIFEST_FILE="$MANIFEST_DIR/image.yaml"
-
-          mkdir -p "$MANIFEST_DIR"
-
-          cd "${{ github.workspace }}/${{ steps.meta.outputs.component }}"
-
-          uvx --from=git+https://github.com/lucabello/noctua \
-            noctua rock manifest canonical/temporal-rocks \
-            --commit "${{ github.sha }}" \
-            --version "${{ steps.meta.outputs.version }}" \
-            --base "${{ steps.meta.outputs.base }}" \
-            --risk "$RISK" \
-            --support "$SUPPORT" \
-            --directory "${{ steps.meta.outputs.component }}" \
-            | tee "$MANIFEST_FILE"
-
-          UPLOAD_COUNT="$(python3 -c "
-          import yaml
-          with open('$MANIFEST_FILE') as f:
-              data = yaml.safe_load(f)
-          print(len(data.get('upload', [])))
-          ")"
-
-          if [[ "$UPLOAD_COUNT" -eq 0 ]]; then
-            echo "Nothing to upload"
-            exit 0
-          fi
-
-          echo "Upload entries: $UPLOAD_COUNT"
-
-          echo
-          echo "OCI Factory change:"
-          cd "$OCI_DIR"
-          git status --short
-          git diff -- "oci/$IMAGE_NAME/image.yaml"
-      
-      - name: Create OCI Factory commit locally
-        run: |
-          IMAGE_NAME="${{ steps.meta.outputs.name }}"
-          OCI_DIR="${RUNNER_TEMP}/oci-factory"
-
-          cd "$OCI_DIR"
-
-          git config user.name "temporal-rocks-ci"
-          git config user.email "temporal-rocks-ci@users.noreply.github.com"
-
-          BRANCH_NAME="update-${IMAGE_NAME}"
-          git checkout -b "$BRANCH_NAME"
-
-          git add "oci/${IMAGE_NAME}/image.yaml"
-
-          if git diff --cached --quiet; then
-            echo "Nothing changed in OCI Factory"
-            exit 0
-          fi
-
-          git commit -m "chore: Add new ${IMAGE_NAME} releases"
-
-          echo
-          echo "Created commit:"
-          git log -1 --oneline
-
-          echo
-          echo "Files in commit:"
-          git diff-tree --no-commit-id --name-only -r HEAD
-
-          echo
-          echo "Commit contents:"
-          git show --stat --oneline HEAD
+    with:
+      source-repository: canonical/temporal-rocks
+      source-ref: ${{ github.event.pull_request.head.sha }}
+      rock-directory: ${{ matrix.rock-directory }}
+      rock-support: minor
+      risk-track: stable
+      dry-run: true
