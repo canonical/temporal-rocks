@@ -35,7 +35,7 @@ jobs:
       matrix:
         rock-directory: ${{ fromJSON(needs.changed-rocks.outputs.paths) }}
 
-    uses: canonical/workflows-team/.github/workflows/rock-release-oci-factory.yaml@test-oci-workflow
+    uses: canonical/workflows-team/.github/workflows/rock-release-oci-factory.yaml@main
 
     with:
       source-repository: canonical/temporal-rocks
