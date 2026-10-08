@@ -69,3 +69,4 @@ parts:
         source-type: local
         override-build: |
             mkdir -p ${CRAFT_PART_INSTALL}/home/ui-server
+# small change
