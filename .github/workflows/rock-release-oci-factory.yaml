@@ -1,19 +1,14 @@
 name: Release changed rocks to OCI Factory
 
 on:
-  pull_request:
-    paths:
-      - "temporal-server/**"
-      - "temporal-ui/**"
-      - ".github/workflows/rock-release-oci-manual.yaml"
-
   push:
     branches:
       - main
     paths:
       - "temporal-server/**"
+      - "!temporal-server/upgrader/**"
       - "temporal-ui/**"
-  
+
   workflow_dispatch:
     inputs:
       rock-directory:
@@ -33,18 +28,18 @@ permissions:
 
 jobs:
   changed-rocks:
-    if: ${{ github.event_name != 'workflow_dispatch' }}
-    uses: canonical/workflows-team/.github/workflows/get_modified_directories_by_marker.yaml@main
+    if: ${{ github.event_name == 'push' }}
+    uses: canonical/workflows-team/.github/workflows/get_modified_directories_by_marker.yaml@test-oci-workflow
     with:
       marker: rockcraft.yaml
-      base-ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-  
+      base-ref: ${{ github.event.before }}
+
   release:
     name: Release ${{ matrix.rock-directory }}
     needs: changed-rocks
     if: >-
       ${{
-        github.event_name != 'workflow_dispatch' &&
+        github.event_name == 'push' &&
         needs.changed-rocks.outputs.paths != '[]' &&
         needs.changed-rocks.outputs.paths != ''
       }}
@@ -58,11 +53,11 @@ jobs:
 
     with:
       source-repository: canonical/temporal-rocks
-      source-ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+      source-ref: ${{ github.sha }}
       rock-directory: ${{ matrix.rock-directory }}
       rock-support: minor
       risk-track: stable
-      dry-run: true
+      dry-run: false
 
     secrets:
       WF_CHARMERS_BOT_TOKEN: ${{ secrets.WF_CHARMERS_BOT_TOKEN }}
@@ -73,7 +68,7 @@ jobs:
     name: Release ${{ inputs.rock-directory }}
     if: ${{ github.event_name == 'workflow_dispatch' }}
 
-    uses: canonical/workflows-team/.github/workflows/rock-release-oci-factory.yaml@test-oci-workflow
+    uses: canonical/workflows-team/.github/workflows/rock-release-oci-factory.yaml@main
 
     with:
       source-repository: canonical/temporal-rocks
