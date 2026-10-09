@@ -29,7 +29,7 @@ permissions:
 jobs:
   changed-rocks:
     if: ${{ github.event_name == 'push' }}
-    uses: canonical/workflows-team/.github/workflows/get_modified_directories_by_marker.yaml@test-oci-workflow
+    uses: canonical/workflows-team/.github/workflows/get_modified_directories_by_marker.yaml@main
     with:
       marker: rockcraft.yaml
       base-ref: ${{ github.event.before }}
@@ -49,7 +49,7 @@ jobs:
       matrix:
         rock-directory: ${{ fromJSON(needs.changed-rocks.outputs.paths) }}
 
-    uses: canonical/workflows-team/.github/workflows/rock-release-oci-factory.yaml@test-oci-workflow
+    uses: canonical/workflows-team/.github/workflows/rock-release-oci-factory.yaml@main
 
     with:
       source-repository: canonical/temporal-rocks
