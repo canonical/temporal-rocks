@@ -28,13 +28,20 @@ checks:
 
 parts:
     temporal:
+        # Upstream cmd/server plus the charm's Google OAuth claim mapper and
+        # OpenFGA authorizer, used when the config enables `auth`.
         plugin: go
-        source: https://github.com/temporalio/temporal
-        source-subdir: cmd/server 
-        source-type: git
-        source-tag: v1.31.2
+        source: server
+        source-type: local
         build-snaps:
             - go/1.26/stable
+        overlay-packages:
+        # Overlay so update-ca-certificates runs (rockcraft#334); the claim
+        # mapper verifies tokens against https://www.googleapis.com.
+            - ca-certificates
+        override-build: |
+            craftctl default
+            go test ./...
         organize:
             bin/server: bin/temporal-server
     temporal-cli:

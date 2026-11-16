@@ -46,6 +46,17 @@ just pack temporal-server/1.23.1
 
 Each of the rocks hosted in this repository build temporal artifacts or other necessary tools. More than one of these rocks can be packed with the same artifact, e.g. both the temporal-server and temporal-admin-tools rocks have the temporal cli. It is necessary to ensure that when we bump the version of temporal cli in one of these rocks, we consider whether the version should be bumped in the other rocks that contain it too.
 
+### temporal-server binary
+
+The temporal-server rocks do not ship upstream `cmd/server`: it ignores the `auth` block the charm renders, so Google OAuth and OpenFGA would not be enforced when `auth-enabled` is set. Instead:
+
+- `temporal-server/1.31/server/` is a Go module containing upstream `cmd/server` (at the rock's Temporal version) plus the claim mapper and authorizer in `authorizer/`. When bumping Temporal, update `go.temporal.io/server` in its `go.mod` (and run `go mod tidy`) and re-sync `main.go` with upstream `cmd/server/main.go`, keeping the auth override (`cfg`-level `auth` block via `loadAuth`).
+- `temporal-server/1.23.1/server/` is the equivalent module vendored from [charmed-temporal-image](https://github.com/canonical/charmed-temporal-image) @ `49c7692` — the source of the pre-rock image — pinned to `go.temporal.io/server` v1.23.1.
+
+Both install `ca-certificates` as an overlay package, which is required to verify tokens against `https://www.googleapis.com`. The goss checks assert that the built `temporal-server` binary contains the authorizer package, guarding against a silent return to an upstream-only build.
+
+Run the module tests with `cd temporal-server/<version>/server && go test ./...`; the rock build also runs them, and `.github/workflows/server-tests.yaml` runs `gofmt`/`go vet`/`go test` on both modules for PRs.
+
 ## Running a built Temporal rock
 
 To run the built rock in a K8s distribution, please ensure that `kubectl` has the proper configuration to interact with the K8s distribution.
