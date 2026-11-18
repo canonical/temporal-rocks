@@ -44,3 +44,10 @@ command:
     stderr: []
     timeout: 1000
     skip: false
+  'temporal-server includes the auth authorizer':
+    exit-status: 0
+    exec: 'grep -aq "temporal-server/1.31/server/authorizer" /usr/bin/temporal-server'
+    stdout: []
+    stderr: []
+    timeout: 1000
+    skip: false
