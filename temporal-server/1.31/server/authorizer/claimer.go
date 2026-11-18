@@ -55,10 +55,17 @@ type NamespaceAccessProvider interface {
 	GetNamespaceAccessInformation(ctx context.Context, email string, groups []string) ([]NamespaceAccess, error)
 }
 
+// tupleFinder is the subset of *ofga.Client that AuthClient relies on. It
+// exists so the pagination loops can be exercised without a live OpenFGA
+// server.
+type tupleFinder interface {
+	FindMatchingTuples(ctx context.Context, tuple ofga.Tuple, pageSize int32, continuationToken string) ([]ofga.TimestampedTuple, string, error)
+}
+
 // AuthClient implements the necessary methods needed to fetch namespace access
 // information from an OpenFGA store.
 type AuthClient struct {
-	OfgaClient *ofga.Client
+	OfgaClient tupleFinder
 }
 
 // TokenClaimMapper implements Temporal authorization.ClaimMapper,
@@ -203,7 +210,7 @@ func (c *AuthClient) GetNamespaceAccessInformation(ctx context.Context, email st
 		continuationToken := ""
 
 		for {
-			tuples, continuationToken, err := c.OfgaClient.FindMatchingTuples(ctx, ofga.Tuple{
+			tuples, nextToken, err := c.OfgaClient.FindMatchingTuples(ctx, ofga.Tuple{
 				Object:   &ofga.Entity{Kind: "group", ID: fmt.Sprintf("%v#member", group)},
 				Relation: "",
 				Target:   &ofga.Entity{Kind: "namespace", ID: ""},
@@ -211,6 +218,7 @@ func (c *AuthClient) GetNamespaceAccessInformation(ctx context.Context, email st
 			if err != nil {
 				return nil, err
 			}
+			continuationToken = nextToken
 
 			for _, tuple := range tuples {
 				namespaceAccess = append(namespaceAccess, NamespaceAccess{
@@ -234,7 +242,7 @@ func (c *AuthClient) GetUserGroups(ctx context.Context, email string) ([]string,
 	var groups []string
 	continuationToken := ""
 	for {
-		tuples, continuationToken, err := c.OfgaClient.FindMatchingTuples(ctx, ofga.Tuple{
+		tuples, nextToken, err := c.OfgaClient.FindMatchingTuples(ctx, ofga.Tuple{
 			Object:   &ofga.Entity{Kind: "user", ID: email},
 			Relation: "",
 			Target:   &ofga.Entity{Kind: "group", ID: ""},
@@ -242,6 +250,7 @@ func (c *AuthClient) GetUserGroups(ctx context.Context, email string) ([]string,
 		if err != nil {
 			return nil, err
 		}
+		continuationToken = nextToken
 
 		for _, tuple := range tuples {
 			groups = append(groups, tuple.Tuple.Target.ID)

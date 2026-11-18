@@ -88,6 +88,11 @@ func TestLoadAuth(t *testing.T) {
 		zone:     "zone",
 		expected: authorizer.Auth{},
 	}, {
+		desc:     "empty env falls back to development.yaml, as upstream's loader does",
+		files:    map[string]string{"development.yaml": "auth:\n  enabled: true\n"},
+		env:      "",
+		expected: authorizer.Auth{Enabled: true},
+	}, {
 		desc:     "templated config is rendered",
 		files:    map[string]string{"charm.yaml": "# enable-template\nauth:\n  enabled: {{ \"true\" }}\n"},
 		env:      "charm",

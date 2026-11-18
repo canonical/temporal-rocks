@@ -1,10 +1,12 @@
 package authorizer_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/canonical/ofga"
 	"github.com/canonical/temporal-rocks/temporal-server/1.31/server/authorizer"
 	mock "github.com/canonical/temporal-rocks/temporal-server/1.31/server/authorizer/mocks"
 	gomock "go.uber.org/mock/gomock"
@@ -221,4 +223,99 @@ func TestGetClaims(t *testing.T) {
 			}
 		})
 	}
+}
+
+// fakeTupleFinder serves scripted FindMatchingTuples pages keyed by the
+// continuation token it is called with, so the pagination loops can be
+// exercised without a live OpenFGA server.
+type fakeTupleFinder struct {
+	pages map[string]fakePage
+	calls []string
+}
+
+type fakePage struct {
+	tuples []ofga.TimestampedTuple
+	next   string
+	err    error
+}
+
+func (f *fakeTupleFinder) FindMatchingTuples(_ context.Context, _ ofga.Tuple, _ int32, continuationToken string) ([]ofga.TimestampedTuple, string, error) {
+	f.calls = append(f.calls, continuationToken)
+	if len(f.calls) > 10 {
+		return nil, "", fmt.Errorf("FindMatchingTuples did not advance past the first page")
+	}
+	page, ok := f.pages[continuationToken]
+	if !ok {
+		return nil, "", fmt.Errorf("unexpected continuation token %q", continuationToken)
+	}
+	if page.err != nil {
+		return nil, "", page.err
+	}
+	return page.tuples, page.next, nil
+}
+
+func groupTuple(id string) ofga.TimestampedTuple {
+	return ofga.TimestampedTuple{Tuple: ofga.Tuple{
+		Target: &ofga.Entity{Kind: "group", ID: id},
+	}}
+}
+
+func namespaceTuple(ns, relation string) ofga.TimestampedTuple {
+	return ofga.TimestampedTuple{Tuple: ofga.Tuple{
+		Relation: ofga.Relation(relation),
+		Target:   &ofga.Entity{Kind: "namespace", ID: ns},
+	}}
+}
+
+func TestGetUserGroupsPagination(t *testing.T) {
+	c := qt.New(t)
+
+	// Two pages of results: the second page must actually be requested with
+	// the continuation token from the first. A regression that re-declares
+	// the token inside the loop refetches page one forever.
+	finder := &fakeTupleFinder{pages: map[string]fakePage{
+		"":       {tuples: []ofga.TimestampedTuple{groupTuple("group-a")}, next: "page-2"},
+		"page-2": {tuples: []ofga.TimestampedTuple{groupTuple("group-b")}},
+	}}
+	client := &authorizer.AuthClient{OfgaClient: finder}
+
+	groups, err := client.GetUserGroups(context.Background(), "user@example.com")
+	c.Assert(err, qt.IsNil)
+	c.Assert(groups, qt.DeepEquals, []string{"group-a", "group-b"})
+	c.Assert(finder.calls, qt.DeepEquals, []string{"", "page-2"})
+}
+
+func TestGetUserGroupsPaginationError(t *testing.T) {
+	c := qt.New(t)
+
+	finder := &fakeTupleFinder{pages: map[string]fakePage{
+		"":       {tuples: []ofga.TimestampedTuple{groupTuple("group-a")}, next: "page-2"},
+		"page-2": {err: fmt.Errorf("ofga read failed")},
+	}}
+	client := &authorizer.AuthClient{OfgaClient: finder}
+
+	_, err := client.GetUserGroups(context.Background(), "user@example.com")
+	c.Assert(err, qt.ErrorMatches, "ofga read failed")
+}
+
+func TestGetNamespaceAccessInformationPagination(t *testing.T) {
+	c := qt.New(t)
+
+	// Each group paginates independently and resets to an empty continuation
+	// token, so two groups mean two full paginated walks.
+	finder := &fakeTupleFinder{pages: map[string]fakePage{
+		"":       {tuples: []ofga.TimestampedTuple{namespaceTuple("ns-a", "writer")}, next: "page-2"},
+		"page-2": {tuples: []ofga.TimestampedTuple{namespaceTuple("ns-b", "reader")}},
+	}}
+	client := &authorizer.AuthClient{OfgaClient: finder}
+
+	access, err := client.GetNamespaceAccessInformation(context.Background(), "user@example.com", []string{"group-a", "group-b"})
+	c.Assert(err, qt.IsNil)
+	c.Assert(access, qt.DeepEquals, []authorizer.NamespaceAccess{
+		{Namespace: "ns-a", Relation: "writer"},
+		{Namespace: "ns-b", Relation: "reader"},
+		{Namespace: "ns-a", Relation: "writer"},
+		{Namespace: "ns-b", Relation: "reader"},
+	})
+	c.Assert(finder.calls, qt.DeepEquals, []string{"", "page-2", "", "page-2"})
 }

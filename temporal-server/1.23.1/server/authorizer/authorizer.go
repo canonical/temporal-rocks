@@ -58,14 +58,14 @@ func (a *authorizer) Authorize(_ context.Context, claims *authorization.Claims,
 	target *authorization.CallTarget) (authorization.Result, error) {
 	apiName := shortApiName(target.APIName)
 
-	if claims == nil {
-		a.logWarn(fmt.Sprintf("denied access to %s on namespace %s, no claims provided", apiName, target.Namespace))
-		return decisionDeny, nil
-	}
-
 	if authorization.IsHealthCheckAPI(apiName) || authorization.IsHealthCheckAPI(target.APIName) {
 		a.logger.Info(fmt.Sprintf("allowing access to health check API %s", apiName))
 		return decisionAllow, nil
+	}
+
+	if claims == nil {
+		a.logWarn(fmt.Sprintf("denied access to %s on namespace %s, no claims provided", apiName, target.Namespace))
+		return decisionDeny, nil
 	}
 
 	requiredRole := authorization.RoleWriter

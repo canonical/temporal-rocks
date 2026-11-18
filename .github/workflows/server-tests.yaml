@@ -4,6 +4,9 @@ name: Server Module Tests
 # module (upstream cmd/server plus the charm auth extensions). `go test` also
 # runs inside the rock build, but this job gives fast, dedicated feedback.
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -20,6 +23,7 @@ jobs:
   go-checks:
     name: go fmt, vet and test (${{ matrix.dir }})
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:

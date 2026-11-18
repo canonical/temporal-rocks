@@ -55,13 +55,19 @@ type authFile struct {
 const (
 	baseConfigFile = "base.yaml"
 	enableTemplate = "enable-template"
-	// Same limit upstream uses when looking for the enable-template marker.
+	// Same defaults upstream's legacy loader uses.
+	defaultEnv         = "development"
 	commentSearchLimit = 1024
 )
 
 // ConfigFiles returns the config files upstream's legacy loader reads for the
 // given directory, environment and zone, in increasing order of precedence.
+// An empty env falls back to "development", as upstream's loader does.
 func ConfigFiles(configDir, env, zone string) ([]string, error) {
+	if env == "" {
+		env = defaultEnv
+	}
+
 	candidates := []string{
 		filepath.Join(configDir, baseConfigFile),
 		filepath.Join(configDir, env+".yaml"),

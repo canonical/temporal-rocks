@@ -23,6 +23,21 @@ func TestAuthorize(t *testing.T) {
 		// Outputs
 		expectedDecision authorization.Decision
 	}{{
+		desc:             "allow: health check API is reachable without claims",
+		claims:           nil,
+		target:           "/grpc.health.v1.Health/Check",
+		expectedDecision: authorization.DecisionAllow,
+	}, {
+		desc:             "allow: GetSystemInfo is reachable without claims",
+		claims:           nil,
+		target:           "/temporal.api.workflowservice.v1.WorkflowService/GetSystemInfo",
+		expectedDecision: authorization.DecisionAllow,
+	}, {
+		desc:             "deny: no claims on a regular API",
+		claims:           nil,
+		target:           "ListNamespaces",
+		expectedDecision: authorization.DecisionDeny,
+	}, {
 		desc: "allow: caller has system read access permissions, read-only API",
 		claims: &authorization.Claims{
 			System: authorization.RoleReader,
