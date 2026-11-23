@@ -206,8 +206,6 @@ func (c TokenClaimMapper) GetClaims(authInfo *authorization.AuthInfo) (*authoriz
 		}
 	}
 
-
-
 	if !hasNamespaces && c.Logger != nil {
 		c.Logger.Warn(fmt.Sprintf("received request with valid token but no namespace access; groups found: %v", userGroups))
 	}
