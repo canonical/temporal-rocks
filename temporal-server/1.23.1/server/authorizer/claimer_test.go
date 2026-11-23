@@ -50,6 +50,22 @@ func TestTokenVerifier(t *testing.T) {
 		Azp:           "client_id",
 	}
 
+	multiScopeToken := &authorizer.TokenInfo{
+		Exp:           fmt.Sprint(time.Now().Add(time.Hour).Unix()),
+		EmailVerified: "true",
+		Email:         "user@example.com",
+		Scope:         "profile https://www.googleapis.com/auth/userinfo.email openid",
+		Azp:           "client_id",
+	}
+
+	partialScopeToken := &authorizer.TokenInfo{
+		Exp:           fmt.Sprint(time.Now().Add(time.Hour).Unix()),
+		EmailVerified: "true",
+		Email:         "user@example.com",
+		Scope:         "https://www.googleapis.com/auth/userinfo.email.admin",
+		Azp:           "client_id",
+	}
+
 	differentClientToken := &authorizer.TokenInfo{
 		Exp:           fmt.Sprint(time.Now().Add(time.Hour).Unix()),
 		EmailVerified: "true",
@@ -90,6 +106,15 @@ func TestTokenVerifier(t *testing.T) {
 		{
 			desc:        "error: missing required scope",
 			token:       noScopeToken,
+			expectedErr: "token scope must include email",
+		},
+		{
+			desc:  "success: required scope among several space-separated scopes",
+			token: multiScopeToken,
+		},
+		{
+			desc:        "error: partial scope match is not sufficient",
+			token:       partialScopeToken,
 			expectedErr: "token scope must include email",
 		},
 		{
@@ -187,6 +212,73 @@ func TestGetClaims(t *testing.T) {
 				tv.EXPECT().GetTokenInfo(gomock.Any()).Return(validToken, nil),
 				tv.EXPECT().VerifyToken(gomock.Any()).Return(nil),
 				np.EXPECT().GetUserGroups(gomock.Any(), gomock.Any()).Return([]string{}, nil),
+				np.EXPECT().GetNamespaceAccessInformation(gomock.Any(), gomock.Any(), gomock.Any()).Return([]authorizer.NamespaceAccess{{Namespace: "foobar", Relation: "writer"}}, nil),
+			}
+		},
+		expectedClaims: &authorization.Claims{
+			Namespaces: map[string]authorization.Role{"": authorization.RoleReader, "foobar": authorization.RoleWriter},
+		},
+	}, {
+		desc: "success: highest role wins when groups grant reader then writer to same namespace",
+		authInfo: &authorization.AuthInfo{
+			AuthToken: validAuthToken,
+		},
+		adminGroups: "group1",
+		setupExpectations: func(tv *mock.MockTokenVerifier, np *mock.MockNamespaceAccessProvider) []*gomock.Call {
+			return []*gomock.Call{
+				tv.EXPECT().GetTokenInfo(gomock.Any()).Return(validToken, nil),
+				tv.EXPECT().VerifyToken(gomock.Any()).Return(nil),
+				np.EXPECT().GetUserGroups(gomock.Any(), gomock.Any()).Return([]string{}, nil),
+				np.EXPECT().GetNamespaceAccessInformation(gomock.Any(), gomock.Any(), gomock.Any()).Return([]authorizer.NamespaceAccess{
+					{Namespace: "foobar", Relation: "reader"},
+					{Namespace: "foobar", Relation: "writer"},
+				}, nil),
+			}
+		},
+		expectedClaims: &authorization.Claims{
+			Namespaces: map[string]authorization.Role{"": authorization.RoleReader, "foobar": authorization.RoleWriter},
+		},
+	}, {
+		desc: "success: highest role wins when groups grant writer then reader to same namespace",
+		authInfo: &authorization.AuthInfo{
+			AuthToken: validAuthToken,
+		},
+		adminGroups: "group1",
+		setupExpectations: func(tv *mock.MockTokenVerifier, np *mock.MockNamespaceAccessProvider) []*gomock.Call {
+			return []*gomock.Call{
+				tv.EXPECT().GetTokenInfo(gomock.Any()).Return(validToken, nil),
+				tv.EXPECT().VerifyToken(gomock.Any()).Return(nil),
+				np.EXPECT().GetUserGroups(gomock.Any(), gomock.Any()).Return([]string{}, nil),
+				np.EXPECT().GetNamespaceAccessInformation(gomock.Any(), gomock.Any(), gomock.Any()).Return([]authorizer.NamespaceAccess{
+					{Namespace: "foobar", Relation: "writer"},
+					{Namespace: "foobar", Relation: "reader"},
+				}, nil),
+			}
+		},
+		expectedClaims: &authorization.Claims{
+			Namespaces: map[string]authorization.Role{"": authorization.RoleReader, "foobar": authorization.RoleWriter},
+		},
+	}, {
+		desc: "success: OpenFGA lookups are bounded by a deadline",
+		authInfo: &authorization.AuthInfo{
+			AuthToken: validAuthToken,
+		},
+		adminGroups: "group1",
+		setupExpectations: func(tv *mock.MockTokenVerifier, np *mock.MockNamespaceAccessProvider) []*gomock.Call {
+			return []*gomock.Call{
+				tv.EXPECT().GetTokenInfo(gomock.Any()).Return(validToken, nil),
+				tv.EXPECT().VerifyToken(gomock.Any()).Return(nil),
+				np.EXPECT().GetUserGroups(gomock.Any(), gomock.Any()).DoAndReturn(
+					func(ctx context.Context, _ string) ([]string, error) {
+						deadline, ok := ctx.Deadline()
+						if !ok {
+							return nil, fmt.Errorf("lookup context has no deadline")
+						}
+						if d := time.Until(deadline); d <= 0 || d > time.Minute {
+							return nil, fmt.Errorf("lookup deadline is unreasonable: %v", d)
+						}
+						return []string{}, nil
+					}),
 				np.EXPECT().GetNamespaceAccessInformation(gomock.Any(), gomock.Any(), gomock.Any()).Return([]authorizer.NamespaceAccess{{Namespace: "foobar", Relation: "writer"}}, nil),
 			}
 		},

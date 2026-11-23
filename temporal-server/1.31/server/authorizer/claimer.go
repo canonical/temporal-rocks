@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/canonical/ofga"
 	"go.temporal.io/server/common/authorization"
@@ -93,6 +94,11 @@ var roleMap = map[string]authorization.Role{
 	"admin":  authorization.RoleAdmin,
 }
 
+// ofgaLookupTimeout bounds the OpenFGA reads GetClaims performs. The upstream
+// ClaimMapper interface carries no request context, so this is the deadline a
+// slow or unreachable OpenFGA can stall an authorization request.
+const ofgaLookupTimeout = 10 * time.Second
+
 func NewTokenClaimMapper(ctx context.Context, auth *Auth, logger *zap.Logger) (authorization.ClaimMapper, error) {
 	client, err := ofga.NewClient(ctx, ofga.OpenFGAParams{
 		Scheme:      auth.OFGA.APIScheme,
@@ -154,7 +160,8 @@ func (c TokenClaimMapper) GetClaims(authInfo *authorization.AuthInfo) (*authoriz
 	}
 
 	email := tokenInfo.Email
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), ofgaLookupTimeout)
+	defer cancel()
 
 	adminGroupsSlice := strings.Split(c.AdminGroups, ",")
 	userGroups, err := c.NamespaceAccessProvider.GetUserGroups(ctx, email)
@@ -185,7 +192,12 @@ func (c TokenClaimMapper) GetClaims(authInfo *authorization.AuthInfo) (*authoriz
 		if ns.Namespace != "" {
 			role, exists := roleMap[ns.Relation]
 			if exists {
-				claims.Namespaces[ns.Namespace] = role
+				// Several groups may grant the same namespace at different
+				// levels; keep the most permissive role regardless of tuple
+				// order.
+				if role > claims.Namespaces[ns.Namespace] {
+					claims.Namespaces[ns.Namespace] = role
+				}
 				hasNamespaces = true
 			}
 		}

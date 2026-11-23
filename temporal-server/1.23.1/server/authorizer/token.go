@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -207,11 +208,15 @@ func (v *Verifier) VerifyToken(token *TokenInfo) error {
 	expirationTime := time.Unix(intExp, 0)
 	currentTime := time.Now()
 
+	// Google service-account access tokens report their numeric unique ID as
+	// `azp` rather than an OAuth client ID, so the client check is skipped for
+	// them; the suffix still bounds the exemption and the usual expiry, scope
+	// and email-verified checks apply.
 	if !strings.HasSuffix(token.Email, serviceAccountSuffix) && v.GoogleClientID != "" && token.Azp != v.GoogleClientID {
 		return errors.New("incorrect token client id")
 	}
 
-	if v.RequiredScope != "" && !strings.Contains(token.Scope, v.RequiredScope) {
+	if v.RequiredScope != "" && !slices.Contains(strings.Fields(token.Scope), v.RequiredScope) {
 		return errors.New("token scope must include email")
 	}
 
