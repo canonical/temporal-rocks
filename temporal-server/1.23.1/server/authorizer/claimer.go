@@ -128,13 +128,13 @@ func NewTokenClaimMapper(ctx context.Context, cfg *ConfigWithAuth, logger *zap.L
 // It then verifies the groups that the user presented in the access token belongs
 // to via OpenFGA and gives access to various Temporal namespaces according to them.
 //
-// If the user belongs to any of the AdminGroups groups, they get RoleWriter on the global
+// If the user belongs to any of the AdminGroups groups, they get RoleAdmin on the global
 // System namespace. If the user is a member of a group in OpenFGA with some level of
 // access to a given namespace, they get that access level to the namespace. E.g.
 // If user `john` is a member of group `abc`, and group `abc` is related to namespace `example`
 // as a "writer", then user `john` will be assigned RoleWriter on namespace `example`.
-// Additionally, they get RoleReader on empty namespace in order to perform initiating
-// calls required by the SDK.
+// Any namespace role also implies cluster-wide read-only access (e.g.
+// ListNamespaces); see Authorize.
 func (c TokenClaimMapper) GetClaims(authInfo *authorization.AuthInfo) (*authorization.Claims, error) {
 	claims := authorization.Claims{
 		Namespaces: make(map[string]authorization.Role),
@@ -172,7 +172,7 @@ func (c TokenClaimMapper) GetClaims(authInfo *authorization.AuthInfo) (*authoriz
 	// Check for admin group membership
 	for _, grp := range adminGroupsSlice {
 		if grp != "" && slices.Contains(userGroups, grp) {
-			claims.System = authorization.RoleWriter
+			claims.System = authorization.RoleAdmin
 			return &claims, nil
 		}
 	}
@@ -184,6 +184,9 @@ func (c TokenClaimMapper) GetClaims(authInfo *authorization.AuthInfo) (*authoriz
 
 	openAccessNamespaces := strings.Split(c.OpenAccessNamespaces, ",")
 	for _, ns := range openAccessNamespaces {
+		if ns == "" {
+			continue
+		}
 		claims.Namespaces[ns] = authorization.RoleWriter
 	}
 
@@ -203,9 +206,7 @@ func (c TokenClaimMapper) GetClaims(authInfo *authorization.AuthInfo) (*authoriz
 		}
 	}
 
-	if len(claims.Namespaces) > 0 {
-		claims.Namespaces[""] = authorization.RoleReader
-	}
+
 
 	if !hasNamespaces && c.Logger != nil {
 		c.Logger.Warn(fmt.Sprintf("received request with valid token but no namespace access; groups found: %v", userGroups))

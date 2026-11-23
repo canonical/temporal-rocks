@@ -181,7 +181,7 @@ func TestGetClaims(t *testing.T) {
 			}
 		},
 		expectedClaims: &authorization.Claims{
-			System:     authorization.RoleWriter,
+			System:     authorization.RoleAdmin,
 			Namespaces: map[string]authorization.Role{},
 		},
 	}, {
@@ -199,7 +199,7 @@ func TestGetClaims(t *testing.T) {
 			}
 		},
 		expectedClaims: &authorization.Claims{
-			Namespaces: map[string]authorization.Role{"": authorization.RoleReader},
+			Namespaces: map[string]authorization.Role{},
 		},
 	}, {
 		desc: "success: authInfo contains valid token and user has access to namespace",
@@ -216,7 +216,7 @@ func TestGetClaims(t *testing.T) {
 			}
 		},
 		expectedClaims: &authorization.Claims{
-			Namespaces: map[string]authorization.Role{"": authorization.RoleReader, "foobar": authorization.RoleWriter},
+			Namespaces: map[string]authorization.Role{"foobar": authorization.RoleWriter},
 		},
 	}, {
 		desc: "success: highest role wins when groups grant reader then writer to same namespace",
@@ -236,7 +236,7 @@ func TestGetClaims(t *testing.T) {
 			}
 		},
 		expectedClaims: &authorization.Claims{
-			Namespaces: map[string]authorization.Role{"": authorization.RoleReader, "foobar": authorization.RoleWriter},
+			Namespaces: map[string]authorization.Role{"foobar": authorization.RoleWriter},
 		},
 	}, {
 		desc: "success: highest role wins when groups grant writer then reader to same namespace",
@@ -256,7 +256,7 @@ func TestGetClaims(t *testing.T) {
 			}
 		},
 		expectedClaims: &authorization.Claims{
-			Namespaces: map[string]authorization.Role{"": authorization.RoleReader, "foobar": authorization.RoleWriter},
+			Namespaces: map[string]authorization.Role{"foobar": authorization.RoleWriter},
 		},
 	}, {
 		desc: "success: OpenFGA lookups are bounded by a deadline",
@@ -283,7 +283,7 @@ func TestGetClaims(t *testing.T) {
 			}
 		},
 		expectedClaims: &authorization.Claims{
-			Namespaces: map[string]authorization.Role{"": authorization.RoleReader, "foobar": authorization.RoleWriter},
+			Namespaces: map[string]authorization.Role{"foobar": authorization.RoleWriter},
 		},
 	},
 	}

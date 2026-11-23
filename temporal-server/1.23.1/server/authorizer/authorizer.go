@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"strings"
 
+	"go.temporal.io/server/common/api"
 	"go.temporal.io/server/common/authorization"
 	"go.uber.org/zap"
 )
@@ -68,17 +69,31 @@ func (a *authorizer) Authorize(_ context.Context, claims *authorization.Claims,
 		return decisionDeny, nil
 	}
 
-	requiredRole := authorization.RoleWriter
-	if authorization.IsReadOnlyGlobalAPI(apiName) || authorization.IsReadOnlyNamespaceAPI(apiName) {
-		a.logger.Info(fmt.Sprintf("allowing access to read-only API %s", apiName))
-		requiredRole = authorization.RoleReader
+	metadata := api.GetMethodMetadata(target.APIName)
+
+	var hasRole authorization.Role
+	switch metadata.Scope {
+	case api.ScopeCluster:
+		hasRole = claims.System
+		if metadata.Access == api.AccessReadOnly {
+			// Any namespace role implies cluster-wide read access (e.g.
+			// ListNamespaces); namespace claims do not grant cluster write or
+			// admin operations.
+			for _, role := range claims.Namespaces {
+				if role > hasRole {
+					hasRole = role
+				}
+			}
+		}
+	case api.ScopeNamespace:
+		// System-level claims apply across all namespaces.
+		hasRole = claims.System | claims.Namespaces[target.Namespace]
+	default:
+		a.logWarn(fmt.Sprintf("denied access to %s on namespace %s: unknown API scope", apiName, target.Namespace))
+		return decisionDeny, nil
 	}
 
-	if claims.System >= requiredRole {
-		return decisionAllow, nil
-	}
-
-	if claims.Namespaces[target.Namespace] >= requiredRole {
+	if hasRole >= requiredRole(metadata.Access) {
 		a.logger.Info(fmt.Sprintf("allowing access to %s on namespace %s", apiName, target.Namespace))
 		return decisionAllow, nil
 	}
@@ -86,6 +101,21 @@ func (a *authorizer) Authorize(_ context.Context, claims *authorization.Claims,
 	a.logWarn(fmt.Sprintf("denied access to %s on namespace %s; namespaces found in claims: %v", apiName, target.Namespace, claims.Namespaces))
 
 	return decisionDeny, nil
+}
+
+// requiredRole maps an api.Access level to the minimum role that grants it:
+// read-only APIs need a reader, write APIs a writer, and everything else
+// (admin-level or unknown access) an admin. This mirrors upstream's
+// defaultAuthorizer.
+func requiredRole(access api.Access) authorization.Role {
+	switch access {
+	case api.AccessReadOnly:
+		return authorization.RoleReader
+	case api.AccessWrite:
+		return authorization.RoleWriter
+	default:
+		return authorization.RoleAdmin
+	}
 }
 
 func (a *authorizer) logWarn(msg string) {
